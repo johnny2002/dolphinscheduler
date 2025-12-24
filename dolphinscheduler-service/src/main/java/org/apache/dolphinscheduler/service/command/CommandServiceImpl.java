@@ -44,7 +44,11 @@ import org.apache.dolphinscheduler.service.utils.ParamUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.*;
+import java.util.Date;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -90,17 +94,14 @@ public class CommandServiceImpl implements CommandService {
         }
         // add command timezone
         Schedule schedule = scheduleMapper.queryByProcessDefinitionCode(command.getProcessDefinitionCode());
-        Map<String, String> commandParams =
-                StringUtils.isNotBlank(command.getCommandParam()) ? JSONUtils.toMap(command.getCommandParam())
-                        : new HashMap<>();
         if (schedule != null) {
+            Map<String, String> commandParams =
+                    StringUtils.isNotBlank(command.getCommandParam()) ? JSONUtils.toMap(command.getCommandParam())
+                            : new HashMap<>();
             commandParams.put(Constants.SCHEDULE_TIMEZONE, schedule.getTimezoneId());
-        } else {
-            commandParams.put(Constants.SCHEDULE_TIMEZONE, TimeZone.getDefault().toZoneId().getId());
+            command.setCommandParam(JSONUtils.toJsonString(commandParams));
         }
-        command.setCommandParam(JSONUtils.toJsonString(commandParams));
         command.setId(null);
-        log.info("Command create params: {}", command.getCommandParam());
         result = commandMapper.insert(command);
         return result;
     }
