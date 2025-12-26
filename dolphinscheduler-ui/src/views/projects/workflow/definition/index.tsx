@@ -70,6 +70,7 @@ export default defineComponent({
         pageNo: variables.page,
         searchVal: variables.searchVal
       })
+       sessionStorage.setItem('searchVal', variables.searchVal || '')
     }
 
     const handleUpdateList = () => {
@@ -126,6 +127,8 @@ export default defineComponent({
     })
 
     onMounted(() => {
+      let searchVal = sessionStorage.getItem('searchVal')
+      variables.searchVal = searchVal || '';
       createColumns(variables)
       requestData()
     })
