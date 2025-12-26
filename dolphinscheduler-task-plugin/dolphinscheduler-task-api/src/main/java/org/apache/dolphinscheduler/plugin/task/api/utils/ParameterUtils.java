@@ -20,6 +20,7 @@ package org.apache.dolphinscheduler.plugin.task.api.utils;
 import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.PARAMETER_DATETIME;
 import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.PARAMETER_FORMAT_TIME;
 import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.PARAMETER_SHECDULE_TIME;
+import static org.apache.dolphinscheduler.plugin.task.api.enums.DataType.VARCHAR;
 
 import org.apache.dolphinscheduler.common.utils.DateUtils;
 import org.apache.dolphinscheduler.common.utils.JSONUtils;
@@ -132,7 +133,7 @@ public class ParameterUtils {
      */
     public static void setInParameter(int index, PreparedStatement stmt, DataType dataType,
                                       String value) throws Exception {
-        if (dataType.equals(DataType.VARCHAR)) {
+        if (dataType.equals(VARCHAR)) {
             stmt.setString(index, value);
         } else if (dataType.equals(DataType.INTEGER)) {
             stmt.setInt(index, Integer.parseInt(value));
@@ -154,10 +155,13 @@ public class ParameterUtils {
     }
 
     public static Serializable getParameterValue(Property property) {
-        if (property == null) {
+        if (property == null || property.getValue() == null) {
             return null;
         }
         String value = property.getValue();
+        if (StringUtils.isEmpty(value)) {
+            return property.getType() == VARCHAR ? value : null;
+        }
         switch (property.getType()) {
             case LONG:
                 return Long.valueOf(value);
@@ -223,7 +227,7 @@ public class ParameterUtils {
                     } else if (v instanceof Double) {
                         newProperty.setType(DataType.DOUBLE);
                     } else {
-                        newProperty.setType(DataType.VARCHAR);
+                        newProperty.setType(VARCHAR);
                     }
                     newProperty.setValue(v.toString());
                     newProperty.setProp(property.getProp());
@@ -335,7 +339,7 @@ public class ParameterUtils {
             Iterator<Map.Entry<String, String>> iter = definedParams.entrySet().iterator();
             while (iter.hasNext()) {
                 Map.Entry<String, String> en = iter.next();
-                Property property = new Property(en.getKey(), Direct.IN, DataType.VARCHAR, en.getValue());
+                Property property = new Property(en.getKey(), Direct.IN, VARCHAR, en.getValue());
                 userDefParamsMaps.put(property.getProp(), property);
             }
         }

@@ -158,11 +158,10 @@ public class DataxTask extends AbstractTask {
                     .properties(ParameterUtils.convert(paramsMap))
                     .appendScript(buildCommand(buildDataxJsonFile(paramsMap), paramsMap));
 
-            //TaskResponse commandExecuteResult = shellCommandExecutor.run(shellActuatorBuilder, taskCallBack);
-            //setExitStatusCode(commandExecuteResult.getExitStatusCode());
-            //setProcessId(commandExecuteResult.getProcessId());
-            setExitStatusCode(0);
-            setProcessId(taskExecutionContext.getProcessId());
+            TaskResponse commandExecuteResult = shellCommandExecutor.run(shellActuatorBuilder, taskCallBack);
+
+            setExitStatusCode(commandExecuteResult.getExitStatusCode());
+            setProcessId(commandExecuteResult.getProcessId());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             log.error("The current DataX task has been interrupted", e);
