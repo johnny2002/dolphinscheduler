@@ -17,7 +17,9 @@
 
 package org.apache.dolphinscheduler.plugin.datasource.delegate.param;
 
-import org.apache.dolphinscheduler.common.context.GlobalParametersContext;
+import com.google.auto.service.AutoService;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.dolphinscheduler.common.utils.ApplicationContextUtils;
 import org.apache.dolphinscheduler.common.utils.JSONUtils;
 import org.apache.dolphinscheduler.dao.entity.DataSource;
@@ -30,25 +32,12 @@ import org.apache.dolphinscheduler.plugin.datasource.api.utils.DataSourceUtils;
 import org.apache.dolphinscheduler.spi.datasource.BaseConnectionParam;
 import org.apache.dolphinscheduler.spi.datasource.ConnectionParam;
 import org.apache.dolphinscheduler.spi.enums.DbType;
-
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.BeanInitializationException;
 
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
-
-import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.beans.factory.BeanInitializationException;
-import org.springframework.context.expression.MapAccessor;
-import org.springframework.expression.Expression;
-import org.springframework.expression.ExpressionParser;
-import org.springframework.expression.common.TemplateParserContext;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.expression.spel.support.StandardEvaluationContext;
-
-import com.google.auto.service.AutoService;
 
 
 @AutoService(DataSourceProcessor.class)
@@ -120,19 +109,7 @@ public class DelegateDataSourceProcessor extends AbstractDataSourceProcessor {
     }
 
     private String resolveRealDatasourceName(String realDatasource) {
-        if (realDatasource.matches("^\\$\\{.+\\}")) {
-            // resolve var
-            TemplateParserContext parserContext = new TemplateParserContext("${", "}");
-
-            ExpressionParser parser = new SpelExpressionParser();
-            StandardEvaluationContext context = new StandardEvaluationContext(GlobalParametersContext.getParameters());
-            context.addPropertyAccessor(new MapAccessor());
-            // var context
-            Expression expression = parser.parseExpression(realDatasource, parserContext);
-            return expression.getValue(context, String.class);
-        } else {
-            return realDatasource;
-        }
+        return realDatasource;
     }
 
     @Override
