@@ -47,7 +47,14 @@ const BatchTaskInstance = defineComponent({
   setup() {
     const uiSettingStore = useUISettingStore()
     const logTimer = uiSettingStore.getLogTimer
-    const { t, variables, getTableData, createColumns } = useTable()
+    const { 
+      t, 
+      variables, 
+      getTableData, 
+      createColumns,
+      restoreSearchParams,
+      resetSearchParams 
+    } = useTable()
 
     const requestTableData = () => {
       getTableData({
@@ -74,13 +81,14 @@ const BatchTaskInstance = defineComponent({
       requestTableData()
     }
 
+
     const onClearSearchTaskCode = () => {
       variables.taskCode = null
       onSearch()
     }
 
     const onClearSearchTaskName = () => {
-      variables.searchVal = ''
+      variables.searchVal = null
       onSearch()
     }
 
@@ -160,6 +168,11 @@ const BatchTaskInstance = defineComponent({
 
     onMounted(() => {
       createColumns(variables)
+      
+      // 恢复缓存的查询条件
+      const hasRestored = restoreSearchParams()
+      
+      // 请求数据
       requestTableData()
     })
 
@@ -214,70 +227,74 @@ const BatchTaskInstance = defineComponent({
     return (
       <NSpace vertical>
         <Card>
-          <NSpace justify='end' wrap={false}>
-            <NInput
-              allowInput={this.trim}
-              v-model={[this.taskCode, 'value']}
-              size='small'
-              placeholder={t('project.task.task_code')}
-              clearable
-              onClear={this.onClearSearchTaskCode}
-            />
-            <NInput
-              allowInput={this.trim}
-              v-model={[this.searchVal, 'value']}
-              size='small'
-              placeholder={t('project.task.task_name')}
-              clearable
-              onClear={this.onClearSearchTaskName}
-            />
-            <NInput
-              allowInput={this.trim}
-              v-model={[this.processInstanceName, 'value']}
-              size='small'
-              placeholder={t('project.task.workflow_instance')}
-              clearable
-              onClear={this.onClearSearchProcessInstanceName}
-            />
-            <NInput
-              allowInput={this.trim}
-              v-model={[this.executorName, 'value']}
-              size='small'
-              placeholder={t('project.task.executor')}
-              clearable
-              onClear={this.onClearSearchExecutorName}
-            />
-            <NInput
-              allowInput={this.trim}
-              v-model={[this.host, 'value']}
-              size='small'
-              placeholder={t('project.task.host')}
-              clearable
-              onClear={this.onClearSearchHost}
-            />
-            <NSelect
-              v-model={[this.stateType, 'value']}
-              size='small'
-              options={stateType(t).slice(1)}
-              placeholder={t('project.task.state')}
-              style={{ width: '180px' }}
-              clearable
-              onClear={this.onClearSearchStateType}
-            />
-            <NDatePicker
-              v-model={[this.datePickerRange, 'value']}
-              type='datetimerange'
-              size='small'
-              start-placeholder={t('project.task.start_time')}
-              end-placeholder={t('project.task.end_time')}
-              clearable
-              onClear={this.onClearSearchTime}
-            />
-            <NButton size='small' type='primary' onClick={onSearch}>
-              <NIcon>
-                <SearchOutlined />
-              </NIcon>
-            </NButton>
+          <NSpace justify='space-between' wrap={false}>
+            <NSpace>
+              <NInput
+                allowInput={this.trim}
+                v-model={[this.taskCode, 'value']}
+                size='small'
+                placeholder={t('project.task.task_code')}
+                clearable
+                onClear={this.onClearSearchTaskCode}
+              />
+              <NInput
+                allowInput={this.trim}
+                v-model={[this.searchVal, 'value']}
+                size='small'
+                placeholder={t('project.task.task_name')}
+                clearable
+                onClear={this.onClearSearchTaskName}
+              />
+              <NInput
+                allowInput={this.trim}
+                v-model={[this.processInstanceName, 'value']}
+                size='small'
+                placeholder={t('project.task.workflow_instance')}
+                clearable
+                onClear={this.onClearSearchProcessInstanceName}
+              />
+              <NInput
+                allowInput={this.trim}
+                v-model={[this.executorName, 'value']}
+                size='small'
+                placeholder={t('project.task.executor')}
+                clearable
+                onClear={this.onClearSearchExecutorName}
+              />
+              <NInput
+                allowInput={this.trim}
+                v-model={[this.host, 'value']}
+                size='small'
+                placeholder={t('project.task.host')}
+                clearable
+                onClear={this.onClearSearchHost}
+              />
+              <NSelect
+                v-model={[this.stateType, 'value']}
+                size='small'
+                options={stateType(t).slice(1)}
+                placeholder={t('project.task.state')}
+                style={{ width: '180px' }}
+                clearable
+                onClear={this.onClearSearchStateType}
+              />
+              <NDatePicker
+                v-model={[this.datePickerRange, 'value']}
+                type='datetimerange'
+                size='small'
+                start-placeholder={t('project.task.start_time')}
+                end-placeholder={t('project.task.end_time')}
+                clearable
+                onClear={this.onClearSearchTime}
+              />
+            </NSpace>
+            <NSpace>
+              <NButton size='small' type='primary' onClick={onSearch}>
+                <NIcon>
+                  <SearchOutlined />
+                </NIcon>
+              </NButton>
+            </NSpace>
           </NSpace>
         </Card>
         <Card title={t('project.task.batch_task')}>

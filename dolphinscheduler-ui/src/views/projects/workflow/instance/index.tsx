@@ -34,8 +34,14 @@ export default defineComponent({
   name: 'WorkflowInstanceList',
   setup() {
     let setIntervalP: number
-    const { variables, createColumns, getTableData, batchDeleteInstance } =
-      useTable()
+    const {
+      variables,
+      createColumns,
+      getTableData,
+      batchDeleteInstance,
+      restoreSearchParams,
+      resetSearchParams
+    } = useTable()
 
     const requestData = () => {
       getTableData()
@@ -54,6 +60,11 @@ export default defineComponent({
       requestData()
     }
 
+    const handleReset = () => {
+      resetSearchParams()
+      requestData()
+    }
+
     const handleChangePageSize = () => {
       variables.page = 1
       requestData()
@@ -65,6 +76,11 @@ export default defineComponent({
 
     onMounted(() => {
       createColumns(variables)
+      
+      // 恢复缓存的查询条件
+      const hasRestored = restoreSearchParams()
+      
+      // 请求数据
       requestData()
 
       // Update timing list data
@@ -84,6 +100,7 @@ export default defineComponent({
     return {
       requestData,
       handleSearch,
+      handleReset,
       handleChangePageSize,
       handleBatchDelete,
       ...toRefs(variables)
@@ -96,7 +113,19 @@ export default defineComponent({
     return (
       <NSpace vertical>
         <Card>
-          <ProcessInstanceCondition onHandleSearch={this.handleSearch} />
+          <ProcessInstanceCondition 
+            onHandleSearch={this.handleSearch}
+            onReset={this.handleReset}
+            defaultValues={{
+              processDefineCode: this.processDefineCode,
+              searchVal: this.searchVal,
+              executorName: this.executorName,
+              host: this.host,
+              stateType: this.stateType,
+              startDate: this.startDate,
+              endDate: this.endDate
+            }}
+          />
         </Card>
         <Card title={t('project.workflow.workflow_instance')}>
           <NSpace vertical>

@@ -25,18 +25,25 @@ import {
   NSpace,
   NEllipsis
 } from 'naive-ui'
-import { defineComponent, getCurrentInstance, h, ref, unref } from 'vue'
+import { defineComponent, getCurrentInstance, h, ref, unref, watch, PropType } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { format } from 'date-fns'
+import { format, parseISO } from 'date-fns'
 import { workflowExecutionStateType } from '@/common/common'
 import { queryProcessDefinitionList } from '@/service/modules/process-definition'
 import { SelectMixedOption } from 'naive-ui/lib/select/src/interface'
 import { Router, useRouter } from 'vue-router'
 import { SelectOption } from 'naive-ui/es/select/src/interface'
+import type { IWorkflowInstanceSearch } from '../types'
 
 export default defineComponent({
   name: 'ProcessInstanceCondition',
-  emits: ['handleSearch'],
+  emits: ['handleSearch', 'reset'],
+  props: {
+    defaultValues: {
+      type: Object as PropType<Partial<IWorkflowInstanceSearch>>,
+      default: () => ({})
+    }
+  },
   setup(props, ctx) {
     const router: Router = useRouter()
 
@@ -44,7 +51,7 @@ export default defineComponent({
     const executorNameRef = ref('')
     const hostRef = ref('')
     const stateTypeRef = ref('')
-    const startEndTimeRef = ref()
+    const startEndTimeRef = ref<[number, number] | null>(null)
     const projectCode = ref(
       Number(router.currentRoute.value.params.projectCode)
     )
@@ -55,6 +62,7 @@ export default defineComponent({
 
     const processDefinitionOptions = ref<Array<SelectMixedOption>>([])
 
+    // 初始化流程定义列表
     const initProcessList = (code: number) => {
       queryProcessDefinitionList(code).then((result: any) => {
         result.map((item: { code: number; name: string }) => {
@@ -69,6 +77,45 @@ export default defineComponent({
     }
 
     initProcessList(projectCode.value)
+
+    // 设置默认值
+    const setDefaultValues = () => {
+      if (props.defaultValues) {
+        if (props.defaultValues.searchVal !== undefined) {
+          searchValRef.value = props.defaultValues.searchVal
+        }
+        if (props.defaultValues.executorName !== undefined) {
+          executorNameRef.value = props.defaultValues.executorName
+        }
+        if (props.defaultValues.host !== undefined) {
+          hostRef.value = props.defaultValues.host
+        }
+        if (props.defaultValues.stateType !== undefined) {
+          stateTypeRef.value = props.defaultValues.stateType
+        }
+        if (props.defaultValues.processDefineCode !== undefined) {
+          processDefineCodeRef.value = Number(props.defaultValues.processDefineCode)
+        }
+        
+        // 处理日期范围
+        if (props.defaultValues.startDate && props.defaultValues.endDate) {
+          try {
+            const startDate = new Date(props.defaultValues.startDate).getTime()
+            const endDate = new Date(props.defaultValues.endDate).getTime()
+            startEndTimeRef.value = [startDate, endDate]
+          } catch (e) {
+            startEndTimeRef.value = null
+          }
+        } else {
+          startEndTimeRef.value = null
+        }
+      }
+    }
+
+    // 监听默认值变化
+    watch(() => props.defaultValues, () => {
+      setDefaultValues()
+    }, { deep: true, immediate: true })
 
     const handleSearch = () => {
       let startDate = ''
@@ -93,6 +140,23 @@ export default defineComponent({
         endDate,
         processDefineCode: processDefineCodeRef.value
       })
+    }
+
+    const handleReset = () => {
+      // 重置所有表单字段
+      searchValRef.value = ''
+      executorNameRef.value = ''
+      hostRef.value = ''
+      stateTypeRef.value = ''
+      startEndTimeRef.value = null
+      
+      // 重置流程定义代码（保留路由参数中的值）
+      if (!router.currentRoute.value.query.processDefineCode) {
+        processDefineCodeRef.value = undefined
+      }
+      
+      // 触发重置事件
+      ctx.emit('reset')
     }
 
     const onClearSearchVal = () => {
@@ -132,6 +196,7 @@ export default defineComponent({
       stateTypeRef,
       startEndTimeRef,
       handleSearch,
+      handleReset,
       onClearSearchVal,
       onClearSearchExecutor,
       onClearSearchHost,
@@ -153,63 +218,66 @@ export default defineComponent({
     } = this
 
     return (
-      <NSpace justify='end'>
-        {h(NSelect, {
-          style: {
-            width: '210px'
-          },
-          size: 'small',
-          clearable: true,
-          filterable: true,
-          options: unref(processDefinitionOptions),
-          value: processDefineCodeRef,
-          filter: selectFilter,
-          onUpdateValue: (value: any) => {
-            updateValue(value)
-          }
-        })}
-        <NInput
-          allowInput={this.trim}
-          size='small'
-          v-model:value={this.searchValRef}
-          placeholder={t('project.workflow.name')}
-          clearable
-          onClear={this.onClearSearchVal}
-        />
-        <NInput
-          allowInput={this.trim}
-          size='small'
-          v-model:value={this.executorNameRef}
-          placeholder={t('project.workflow.executor')}
-          clearable
-          onClear={this.onClearSearchExecutor}
-        />
-        <NInput
-          allowInput={this.trim}
-          size='small'
-          v-model:value={this.hostRef}
-          placeholder={t('project.workflow.host')}
-          clearable
-          onClear={this.onClearSearchHost}
-        />
-        <NSelect
-          options={options}
-          size='small'
-          style={{ width: '210px' }}
-          defaultValue={''}
-          v-model:value={this.stateTypeRef}
-        />
-        <NDatePicker
-          type='datetimerange'
-          size='small'
-          clearable
-          v-model:value={this.startEndTimeRef}
-        />
-        <NButton type='primary' size='small' onClick={this.handleSearch}>
-          <NIcon>
-            <SearchOutlined />
-          </NIcon>
-        </NButton>
+      <NSpace justify='space-between'>
+        <NSpace>
+          {h(NSelect, {
+            style: {
+              width: '210px'
+            },
+            size: 'small',
+            clearable: true,
+            filterable: true,
+            options: unref(processDefinitionOptions),
+            value: processDefineCodeRef,
+            filter: selectFilter,
+            onUpdateValue: (value: any) => {
+              updateValue(value)
+            }
+          })}
+          <NInput
+            allowInput={this.trim}
+            size='small'
+            v-model:value={this.searchValRef}
+            placeholder={t('project.workflow.name')}
+            clearable
+            onClear={this.onClearSearchVal}
+          />
+          <NInput
+            allowInput={this.trim}
+            size='small'
+            v-model:value={this.executorNameRef}
+            placeholder={t('project.workflow.executor')}
+            clearable
+            onClear={this.onClearSearchExecutor}
+          />
+          <NInput
+            allowInput={this.trim}
+            size='small'
+            v-model:value={this.hostRef}
+            placeholder={t('project.workflow.host')}
+            clearable
+            onClear={this.onClearSearchHost}
+          />
+          <NSelect
+            options={options}
+            size='small'
+            style={{ width: '210px' }}
+            v-model:value={this.stateTypeRef}
+          />
+          <NDatePicker
+            type='datetimerange'
+            size='small'
+            clearable
+            v-model:value={this.startEndTimeRef}
+          />
+        </NSpace>
+        <NSpace>
+          <NButton type='primary' size='small' onClick={this.handleSearch}>
+            <NIcon>
+              <SearchOutlined />
+            </NIcon>
+          </NButton>
+        </NSpace>
       </NSpace>
     )
   }

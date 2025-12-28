@@ -70,6 +70,88 @@ export function useTable() {
     loadingRef: ref(false)
   })
 
+  // 缓存键名
+  const CACHE_KEY = `WorkflowInstanceList_${variables.projectCode}_searchParams`
+
+  // 缓存查询条件
+  const cacheSearchParams = () => {
+    const params = {
+      pageNo: variables.page,
+      pageSize: variables.pageSize,
+      searchVal: variables.searchVal,
+      executorName: variables.executorName,
+      host: variables.host,
+      stateType: variables.stateType,
+      startDate: variables.startDate,
+      endDate: variables.endDate,
+      processDefineCode: variables.processDefineCode,
+      timestamp: new Date().getTime()
+    }
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify(params))
+  }
+
+  // 恢复查询条件
+  const restoreSearchParams = () => {
+    const cachedData = sessionStorage.getItem(CACHE_KEY)
+    if (cachedData) {
+      try {
+        const cachedVars = JSON.parse(cachedData)
+        
+        // 检查缓存是否过期（比如超过1小时）
+        const cacheTime = cachedVars.timestamp || 0
+        const currentTime = new Date().getTime()
+        const oneHour = 60 * 60 * 1000
+        
+        if (currentTime - cacheTime > oneHour) {
+          sessionStorage.removeItem(CACHE_KEY)
+          return false
+        }
+        
+        // 恢复查询条件
+        variables.page = Number(cachedVars.pageNo) || 1
+        variables.pageSize = Number(cachedVars.pageSize) || 10
+        variables.searchVal = cachedVars.searchVal || ''
+        variables.executorName = cachedVars.executorName || ''
+        variables.host = cachedVars.host || ''
+        variables.stateType = cachedVars.stateType || ''
+        variables.startDate = cachedVars.startDate || ''
+        variables.endDate = cachedVars.endDate || ''
+        
+        if (cachedVars.processDefineCode) {
+          variables.processDefineCode = Number(cachedVars.processDefineCode)
+        }
+        
+        return true
+      } catch (e) {
+        return false
+      }
+    }
+    return false
+  }
+
+  // 清除缓存
+  const clearSearchCache = () => {
+    sessionStorage.removeItem(CACHE_KEY)
+  }
+
+  // 重置查询条件
+  const resetSearchParams = () => {
+    variables.page = 1
+    variables.pageSize = 10
+    variables.searchVal = ''
+    variables.executorName = ''
+    variables.host = ''
+    variables.stateType = ''
+    variables.startDate = ''
+    variables.endDate = ''
+    
+    if (!router.currentRoute.value.query.processDefineCode) {
+      variables.processDefineCode = undefined
+    }
+    
+    clearSearchCache()
+  }
+
   const createColumns = (variables: any) => {
     variables.columns = [
       {
@@ -97,12 +179,17 @@ export function useTable() {
             ButtonLink,
             {
               onClick: () => {
-                const routeUrl = router.resolve({
+                router.push({
                   name: 'workflow-instance-detail',
                   params: { id: row.id },
                   query: { code: row.processDefinitionCode }
                 })
-                window.open(routeUrl.href, '_blank')
+                // const routeUrl = router.resolve({
+                //   name: 'workflow-instance-detail',
+                //   params: { id: row.id },
+                //   query: { code: row.processDefinitionCode }
+                // })
+                // window.open(routeUrl.href, '_blank')
               }
             },
             {
@@ -250,6 +337,7 @@ export function useTable() {
   const getTableData = () => {
     if (variables.loadingRef) return
     variables.loadingRef = true
+    
     const params = {
       pageNo: variables.page,
       pageSize: variables.pageSize,
@@ -261,6 +349,10 @@ export function useTable() {
       endDate: variables.endDate,
       processDefineCode: variables.processDefineCode
     }
+    
+    // 缓存查询条件
+    cacheSearchParams()
+    
     queryProcessInstanceListPaging({ ...params }, variables.projectCode).then(
       (res: any) => {
         variables.totalPage = res.totalPage
@@ -269,7 +361,9 @@ export function useTable() {
         })
         variables.loadingRef = false
       }
-    )
+    ).catch(() => {
+      variables.loadingRef = false
+    })
   }
 
   const deleteInstance = (id: number) => {
@@ -355,7 +449,10 @@ export function useTable() {
     variables,
     createColumns,
     getTableData,
-    batchDeleteInstance
+    batchDeleteInstance,
+    restoreSearchParams,
+    resetSearchParams,
+    clearSearchCache
   }
 }
 
