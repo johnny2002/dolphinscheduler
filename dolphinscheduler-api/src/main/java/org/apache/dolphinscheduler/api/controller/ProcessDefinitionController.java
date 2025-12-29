@@ -491,8 +491,8 @@ public class ProcessDefinitionController extends BaseController {
                                                                                 @RequestParam(value = "userId", required = false, defaultValue = "0") Integer userId,
                                                                                 @RequestParam("pageNo") Integer pageNo,
                                                                                 @RequestParam("pageSize") Integer pageSize,
-                                                                                @RequestParam("orderBy") String orderBy,
-                                                                                @RequestParam("order") String order,
+                                                                                @RequestParam(value = "orderBy", required = false) String orderBy,
+                                                                                @RequestParam(value = "order", required = false) String order,
                                                                                 @RequestParam(value = "groupName", required = false) String groupName) {
 
         checkPageParams(pageNo, pageSize);
