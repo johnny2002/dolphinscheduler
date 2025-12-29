@@ -74,6 +74,95 @@ export function useTable() {
     limit: ref(1000)
   })
 
+  // 缓存键名
+  const CACHE_KEY = `TaskInstanceList_${projectCode}_searchParams`
+
+  // 缓存查询条件
+  const cacheSearchParams = () => {
+    const params = {
+      pageNo: variables.page,
+      pageSize: variables.pageSize,
+      searchVal: variables.searchVal,
+      taskCode: variables.taskCode,
+      processInstanceId: variables.processInstanceId,
+      host: variables.host,
+      stateType: variables.stateType,
+      datePickerRange: variables.datePickerRange,
+      executorName: variables.executorName,
+      processInstanceName: variables.processInstanceName,
+      timestamp: new Date().getTime()
+    }
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify(params))
+  }
+
+  // 恢复查询条件
+  const restoreSearchParams = () => {
+    const cachedData = sessionStorage.getItem(CACHE_KEY)
+    if (cachedData) {
+      try {
+        const cachedVars = JSON.parse(cachedData)
+        
+        // 检查缓存是否过期（比如超过1小时）
+        const cacheTime = cachedVars.timestamp || 0
+        const currentTime = new Date().getTime()
+        const oneHour = 60 * 60 * 1000
+        
+        if (currentTime - cacheTime > oneHour) {
+          sessionStorage.removeItem(CACHE_KEY)
+          return false
+        }
+        
+        // 恢复查询条件
+        variables.page = Number(cachedVars.pageNo) || 1
+        variables.pageSize = Number(cachedVars.pageSize) || 10
+        variables.searchVal = cachedVars.searchVal || null
+        variables.taskCode = cachedVars.taskCode || null
+        variables.processInstanceId = cachedVars.processInstanceId || null
+        variables.host = cachedVars.host || null
+        variables.stateType = cachedVars.stateType || null
+        variables.datePickerRange = cachedVars.datePickerRange || null
+        variables.executorName = cachedVars.executorName || null
+        variables.processInstanceName = cachedVars.processInstanceName || null
+        
+        return true
+      } catch (e) {
+        return false
+      }
+    }
+    return false
+  }
+
+  // 清除缓存
+  const clearSearchCache = () => {
+    sessionStorage.removeItem(CACHE_KEY)
+  }
+
+  // 重置查询条件
+  const resetSearchParams = () => {
+    variables.page = 1
+    variables.pageSize = 10
+    variables.searchVal = null
+    variables.taskCode = null
+    variables.host = null
+    variables.stateType = null
+    variables.datePickerRange = null
+    variables.executorName = null
+    variables.processInstanceName = null
+    
+    // 保留路由参数中的值
+    if (!route.query.taskName) {
+      variables.searchVal = null
+    }
+    if (!route.query.taskCode) {
+      variables.taskCode = null
+    }
+    if (!route.query.processInstanceId) {
+      variables.processInstanceId = null
+    }
+    
+    clearSearchCache()
+  }
+
   const createColumns = (variables: any) => {
     variables.columns = [
       {
@@ -105,12 +194,11 @@ export function useTable() {
             ButtonLink,
             {
               onClick: () => {
-                const routeUrl = router.resolve({
+                router.push({
                   name: 'workflow-instance-detail',
                   params: { id: row.processInstanceId },
                   query: { code: projectCode }
                 })
-                window.open(routeUrl.href, '_blank')
               }
             },
             {
@@ -310,6 +398,7 @@ export function useTable() {
   const getTableData = (params: any) => {
     if (variables.loadingRef) return
     variables.loadingRef = true
+    
     const data = {
       pageSize: params.pageSize,
       pageNo: params.pageNo,
@@ -327,6 +416,9 @@ export function useTable() {
       executorName: params.executorName,
       processInstanceName: params.processInstanceName
     }
+
+    // 缓存查询条件
+    cacheSearchParams()
 
     const { state } = useAsyncState(
       queryTaskListPaging(data, { projectCode }).then(
@@ -346,7 +438,10 @@ export function useTable() {
     t,
     variables,
     getTableData,
-    createColumns
+    createColumns,
+    restoreSearchParams,
+    resetSearchParams,
+    clearSearchCache
   }
 }
 

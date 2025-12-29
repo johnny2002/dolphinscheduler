@@ -31,7 +31,7 @@ import {
   getCurrentInstance,
   onMounted,
   toRefs,
-  watch
+  watch,
 } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTable } from './use-table'
@@ -65,15 +65,23 @@ export default defineComponent({
       loadAllGroupNames
     } = useTable()
 
+    // 统一缓存键名
+    const CACHE_KEY = `WorkflowDefinitionList_${projectCode}_variables`
+
     const requestData = () => {
-      getTableData({
+      const json = {
         pageSize: variables.pageSize,
         pageNo: variables.page,
         searchVal: variables.searchVal,
         orderBy: variables.sortField,
         order: variables.sortOrder,
         groupName: variables.selectedFilter
-      })
+      }
+
+      getTableData(json)
+
+      // 缓存当前请求参数
+      sessionStorage.setItem(CACHE_KEY, JSON.stringify(json))
     }
 
     const handleUpdateList = () => {
@@ -96,6 +104,7 @@ export default defineComponent({
 
     const onClearSearch = () => {
       variables.page = 1
+      variables.searchVal = ''
       getTableData({
         pageSize: variables.pageSize,
         pageNo: variables.page,
@@ -130,9 +139,38 @@ export default defineComponent({
     })
 
     onMounted(() => {
+      // 先创建列
       createColumns(variables)
       loadAllGroupNames()
-      requestData()
+      const cachedData = sessionStorage.getItem(CACHE_KEY)
+
+      if (cachedData) {
+        try {
+          const cachedVars = JSON.parse(cachedData)
+
+          const cachedPage = cachedVars.pageNo || cachedVars.page || 1
+          const cachedPageSize = cachedVars.pageSize || 10
+          const cachedSearchVal = cachedVars.searchVal || ''
+
+          // 赋值给响应式变量
+          variables.page = Number(cachedPage)
+          variables.pageSize = Number(cachedPageSize)
+          variables.searchVal = cachedSearchVal
+
+          // 使用恢复的参数请求数据
+          getTableData({
+            pageSize: variables.pageSize,
+            pageNo: variables.page,
+            searchVal: variables.searchVal
+          })
+
+        } catch (e) {
+          requestData()
+        }
+      } else {
+        requestData()
+      }
+
     })
 
     return {

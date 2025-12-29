@@ -122,11 +122,15 @@ export function useTable() {
                   ButtonLink,
                   {
                     onClick: () => {
-                      const routeUrl = router.resolve({
+                      // const routeUrl = router.resolve({
+                      //   name: 'workflow-definition-detail',
+                      //   params: { code: row.code }
+                      // })
+                      // window.open(routeUrl.href, '_blank')
+                      router.push({
                         name: 'workflow-definition-detail',
                         params: { code: row.code }
                       })
-                      window.open(routeUrl.href, '_blank')
                     }
                   },
                   {
