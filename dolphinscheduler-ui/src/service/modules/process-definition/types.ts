@@ -55,6 +55,7 @@ interface ListReq extends PageReq {
 
 interface ProcessDefinitionReq {
   name: string
+  groupName: string
   locations: string
   taskDefinitionJson: string
   taskRelationJson: string

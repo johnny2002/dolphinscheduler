@@ -44,6 +44,7 @@ public class ProcessDefinitionLog extends ProcessDefinition {
     public ProcessDefinitionLog(ProcessDefinition processDefinition) {
         this.setCode(processDefinition.getCode());
         this.setName(processDefinition.getName());
+        this.setGroupName(processDefinition.getGroupName());
         this.setVersion(processDefinition.getVersion());
         this.setReleaseState(processDefinition.getReleaseState());
         this.setProjectCode(processDefinition.getProjectCode());

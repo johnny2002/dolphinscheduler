@@ -193,6 +193,11 @@ export function useTable() {
           })
       },
       {
+        title: t('project.workflow.groupName'),
+        key: 'groupName',
+        ...COLUMN_WIDTH_CONFIG['groupName']
+      },
+      {
         title: t('project.workflow.status'),
         key: 'releaseState',
         ...COLUMN_WIDTH_CONFIG['state'],

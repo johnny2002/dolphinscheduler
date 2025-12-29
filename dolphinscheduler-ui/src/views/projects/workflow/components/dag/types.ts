@@ -22,6 +22,7 @@ export interface ProcessDefinition {
   id: number
   code: number
   name: string
+  groupName: string
   version: number
   releaseState: string
   projectCode: number
@@ -143,6 +144,7 @@ export interface GlobalParam {
 
 export interface SaveForm {
   name: string
+  groupName: string
   description: string
   executionType: string
   timeoutFlag: boolean

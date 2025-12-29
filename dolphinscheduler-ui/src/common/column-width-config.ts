@@ -52,6 +52,9 @@ export const COLUMN_WIDTH_CONFIG = {
   version: {
     width: 80
   },
+  groupName: {
+      width: 180
+  },
   time: {
     width: 180
   },

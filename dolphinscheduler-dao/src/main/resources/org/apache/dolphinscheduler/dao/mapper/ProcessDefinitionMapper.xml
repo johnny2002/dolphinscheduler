@@ -19,12 +19,12 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="org.apache.dolphinscheduler.dao.mapper.ProcessDefinitionMapper">
     <sql id="baseSql">
-        id, code, name, version, release_state, project_code, user_id, description,
+        id, code, name,group_name, version, release_state, project_code, user_id, description,
         global_params, flag, locations, warning_group_id, create_time, timeout, update_time,execution_type
     </sql>
 
     <select id="verifyByDefineName" resultType="org.apache.dolphinscheduler.dao.entity.ProcessDefinition">
-        select pd.id, pd.code, pd.name, pd.version, pd.release_state, pd.project_code, pd.user_id, pd.description,
+        select pd.id, pd.code, pd.name, pd.group_name, pd.version, pd.release_state, pd.project_code, pd.user_id, pd.description,
         pd.global_params, pd.flag, pd.locations, pd.warning_group_id, pd.create_time, pd.timeout, pd.update_time,pd.execution_type
         from t_ds_process_definition pd
         WHERE pd.project_code = #{projectCode}

@@ -46,6 +46,7 @@ export default {
   workflow: {
     on_line: '线上',
     test: '测试',
+    groupName: '分组名称',
     operating_environment: '运行环境',
     workflow_relation: '工作流关系',
     create_workflow: '创建工作流',

@@ -63,6 +63,8 @@ public class ProcessDefinition {
      */
     private String name;
 
+    private String groupName;
+
     /**
      * version
      */
@@ -175,8 +177,9 @@ public class ProcessDefinition {
                              String globalParams,
                              String locations,
                              int timeout,
-                             int userId) {
-        set(projectCode, name, description, globalParams, locations, timeout);
+                             int userId,
+                             String groupName) {
+        set(projectCode, name, description, globalParams, locations, timeout, groupName);
         this.code = code;
         this.userId = userId;
         Date date = new Date();
@@ -190,6 +193,16 @@ public class ProcessDefinition {
                     String globalParams,
                     String locations,
                     int timeout) {
+        set(projectCode, name, description, globalParams, locations, timeout, null);
+    }
+
+    public void set(long projectCode,
+                    String name,
+                    String description,
+                    String globalParams,
+                    String locations,
+                    int timeout,
+                    String groupName) {
         this.projectCode = projectCode;
         this.name = name;
         this.description = description;
@@ -197,6 +210,7 @@ public class ProcessDefinition {
         this.locations = locations;
         this.timeout = timeout;
         this.flag = Flag.YES;
+        this.groupName = groupName;
     }
 
     public void setGlobalParams(String globalParams) {
