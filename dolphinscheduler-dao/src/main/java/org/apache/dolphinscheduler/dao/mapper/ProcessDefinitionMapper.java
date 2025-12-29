@@ -105,7 +105,10 @@ public interface ProcessDefinitionMapper extends BaseMapper<ProcessDefinition> {
     IPage<ProcessDefinition> queryDefineListPaging(IPage<ProcessDefinition> page,
                                                    @Param("searchVal") String searchVal,
                                                    @Param("userId") int userId,
-                                                   @Param("projectCode") long projectCode);
+                                                   @Param("projectCode") long projectCode,
+                                                   @Param("orderBy") String orderBy,
+                                                   @Param("order") String order,
+                                                   @Param("groupName") String groupName);
 
     /**
      * Filter process definitions

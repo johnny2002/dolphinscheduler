@@ -48,10 +48,13 @@ public class ProcessDefinitionDaoImpl extends BaseDao<ProcessDefinition, Process
 
     @Override
     public PageListingResult<ProcessDefinition> listingProcessDefinition(int pageNumber, int pageSize, String searchVal,
-                                                                         int userId, long projectCode) {
+                                                                         int userId, long projectCode,
+                                                                         String orderBy,
+                                                                         String order,
+                                                                         String groupName) {
         Page<ProcessDefinition> page = new Page<>(pageNumber, pageSize);
         IPage<ProcessDefinition> processDefinitions =
-                mybatisMapper.queryDefineListPaging(page, searchVal, userId, projectCode);
+                mybatisMapper.queryDefineListPaging(page, searchVal, userId, projectCode, orderBy, order, groupName);
 
         return PageListingResult.<ProcessDefinition>builder()
                 .totalCount(processDefinitions.getTotal())

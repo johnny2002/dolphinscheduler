@@ -22,12 +22,12 @@ import { useRouter } from 'vue-router'
 import { useAsyncState } from '@vueuse/core'
 import { useTextCopy } from '../components/dag/use-text-copy'
 import {
-  batchCopyByCodes,
-  batchDeleteByCodes,
-  batchExportByCodes,
-  deleteByCode,
-  queryListPaging,
-  release
+    batchCopyByCodes,
+    batchDeleteByCodes,
+    batchExportByCodes,
+    deleteByCode, getAllGroupNames,
+    queryListPaging,
+    release
 } from '@/service/modules/process-definition'
 import { offline, online } from '@/service/modules/schedules'
 import TableAction from './components/table-action'
@@ -71,6 +71,11 @@ export function useTable() {
     copyShowRef: ref(false),
     loadingRef: ref(false),
     setTimingDialogShowRef: ref(false),
+    sortField: ref(''),
+    sortOrder: ref(''), // 'asc' | 'desc' | false
+    filterOptions: ref([]),           // 存储所有可用的分组选项
+    selectedFilter: ref<string[]>([]), // 当前选中的筛选项
+    groupNameFilterOptions: ref([]),  // groupName 列的筛选选项
     dependenciesData: ref({
       showRef: false,
       taskLinks: ref([]),
@@ -191,12 +196,17 @@ export function useTable() {
       {
         title: t('project.workflow.groupName'),
         key: 'groupName',
-        ...COLUMN_WIDTH_CONFIG['groupName']
+        ...COLUMN_WIDTH_CONFIG['groupName'],
+        filterMultiple: false,  // 单选筛选
+        filterOptions: variables.groupNameFilterOptions,      // 筛选项将在获取数据后填充
+        filter: true,
+        render: (row) => row.groupName || '-'  // 处理空值情况
       },
       {
         title: t('project.workflow.status'),
         key: 'releaseState',
         ...COLUMN_WIDTH_CONFIG['state'],
+        sorter: true,
         render: (row) =>
           row.releaseState === 'ONLINE'
             ? h(
@@ -243,12 +253,14 @@ export function useTable() {
       {
         title: t('project.workflow.create_time'),
         key: 'createTime',
-        ...COLUMN_WIDTH_CONFIG['time']
+        ...COLUMN_WIDTH_CONFIG['time'],
+        sorter: true,
       },
       {
         title: t('project.workflow.update_time'),
         key: 'updateTime',
-        ...COLUMN_WIDTH_CONFIG['time']
+        ...COLUMN_WIDTH_CONFIG['time'],
+        sorter: true,
       },
       {
         title: t('project.workflow.description'),
@@ -289,6 +301,21 @@ export function useTable() {
       variables.tableWidth = calculateTableWidth(variables.columns)
     }
   }
+
+    // 添加获取所有分组名称的方法
+    const loadAllGroupNames = async () => {
+        try {
+            const res = await getAllGroupNames(variables.projectCode)
+            const allGroupNames = res.map((name: string) => ({
+                label: name,
+                value: name
+            }))
+            variables.groupNameFilterOptions = allGroupNames
+            updateColumnFilterOptions(allGroupNames)
+        } catch (error) {
+            console.error('Failed to fetch all group names:', error)
+        }
+    }
 
   const editWorkflow = (row: any) => {
     variables.row = row
@@ -565,6 +592,19 @@ export function useTable() {
   const getTableData = (params: IDefinitionParam) => {
     if (variables.loadingRef) return
     variables.loadingRef = true
+    // 添加排序参数
+    const requestParams = {
+        ...params,
+    }
+    // 添加筛选参数
+    if (variables.selectedFilter.length > 0) {
+        requestParams.groupName = variables.selectedFilter[0]  // 假设后端支持按 groupName 筛选
+    }
+    // 如果有排序字段，添加到请求参数中
+    if (variables.sortField && variables.sortOrder) {
+        requestParams.orderBy = variables.sortField
+        requestParams.order = variables.sortOrder === 'asc' ? 'ASC' : 'DESC'
+    }
     const { state } = useAsyncState(
       queryListPaging({ ...params }, variables.projectCode).then((res: any) => {
         variables.totalPage = res.totalPage
@@ -578,12 +618,21 @@ export function useTable() {
     return state
   }
 
+  const updateColumnFilterOptions = (uniqueGroupNames: any[]) => {
+      // 找到 groupName 列并更新其筛选选项
+      const groupNameColumn: any = variables.columns.find(col => col.key === 'groupName')
+      if (groupNameColumn) {
+          groupNameColumn.filterOptions = uniqueGroupNames
+      }
+  }
+
   return {
     variables,
     createColumns,
     getTableData,
     batchDeleteWorkflow,
     batchExportWorkflow,
-    batchCopyWorkflow
+    batchCopyWorkflow,
+    loadAllGroupNames
   }
 }

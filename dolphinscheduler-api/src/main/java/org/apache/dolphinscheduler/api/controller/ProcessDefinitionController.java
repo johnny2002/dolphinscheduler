@@ -36,6 +36,7 @@ import static org.apache.dolphinscheduler.api.enums.Status.SWITCH_PROCESS_DEFINI
 import static org.apache.dolphinscheduler.api.enums.Status.UPDATE_PROCESS_DEFINITION_ERROR;
 import static org.apache.dolphinscheduler.api.enums.Status.VERIFY_PROCESS_DEFINITION_NAME_UNIQUE_ERROR;
 
+import cn.hutool.core.util.StrUtil;
 import org.apache.dolphinscheduler.api.audit.OperatorLog;
 import org.apache.dolphinscheduler.api.audit.enums.AuditType;
 import org.apache.dolphinscheduler.api.enums.Status;
@@ -50,6 +51,7 @@ import org.apache.dolphinscheduler.dao.entity.ProcessDefinition;
 import org.apache.dolphinscheduler.dao.entity.User;
 import org.apache.dolphinscheduler.plugin.task.api.utils.ParameterUtils;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
@@ -488,16 +490,26 @@ public class ProcessDefinitionController extends BaseController {
                                                                                 @RequestParam(value = "otherParamsJson", required = false) String otherParamsJson,
                                                                                 @RequestParam(value = "userId", required = false, defaultValue = "0") Integer userId,
                                                                                 @RequestParam("pageNo") Integer pageNo,
-                                                                                @RequestParam("pageSize") Integer pageSize) {
+                                                                                @RequestParam("pageSize") Integer pageSize,
+                                                                                @RequestParam("orderBy") String orderBy,
+                                                                                @RequestParam("order") String order,
+                                                                                @RequestParam(value = "groupName", required = false) String groupName) {
 
         checkPageParams(pageNo, pageSize);
         searchVal = ParameterUtils.handleEscapes(searchVal);
 
         PageInfo<ProcessDefinition> pageInfo = processDefinitionService.queryProcessDefinitionListPaging(
-                loginUser, projectCode, searchVal, otherParamsJson, userId, pageNo, pageSize);
+                loginUser, projectCode, searchVal, otherParamsJson, userId, pageNo, pageSize, StrUtil.toUnderlineCase(orderBy), order, groupName);
         return Result.success(pageInfo);
 
     }
+
+    @GetMapping("/group-names")
+    @ResponseStatus(HttpStatus.OK)
+    public Result<List<String>> allGroupNames(@PathVariable String projectCode){
+        return processDefinitionService.allGroupNames(projectCode);
+    }
+
 
     /**
      * encapsulation tree view structure

@@ -61,14 +61,18 @@ export default defineComponent({
       getTableData,
       batchDeleteWorkflow,
       batchExportWorkflow,
-      batchCopyWorkflow
+      batchCopyWorkflow,
+      loadAllGroupNames
     } = useTable()
 
     const requestData = () => {
       getTableData({
         pageSize: variables.pageSize,
         pageNo: variables.page,
-        searchVal: variables.searchVal
+        searchVal: variables.searchVal,
+        orderBy: variables.sortField,
+        order: variables.sortOrder,
+        groupName: variables.selectedFilter
       })
     }
 
@@ -127,6 +131,7 @@ export default defineComponent({
 
     onMounted(() => {
       createColumns(variables)
+      loadAllGroupNames()
       requestData()
     })
 
@@ -209,6 +214,22 @@ export default defineComponent({
               v-model:checked-row-keys={this.checkedRowKeys}
               row-class-name='items'
               scrollX={this.tableWidth}
+              onUpdate:sorter={(sorter: any) => {
+                  // 更新排序状态并重新请求数据
+                  this.sortField = sorter.columnKey
+                  this.sortOrder = sorter.order === 'ascend' ? 'asc' :
+                      sorter.order === 'descend' ? 'desc' : ''
+                  this.requestData()
+              }}
+              onUpdate:filters={(filters: any) => {
+                  // 处理筛选变化
+                  if (filters.groupName) {
+                      this.selectedFilter = filters.groupName
+                  } else {
+                      this.selectedFilter = []
+                  }
+                  this.requestData()
+              }}
             />
             <NSpace justify='space-between'>
               <NSpace>

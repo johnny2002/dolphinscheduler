@@ -41,6 +41,7 @@ import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.LOCAL_PA
 import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.TASK_TYPE;
 import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.TASK_TYPE_SQL;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.apache.dolphinscheduler.api.dto.DagDataSchedule;
 import org.apache.dolphinscheduler.api.dto.treeview.Instance;
 import org.apache.dolphinscheduler.api.dto.treeview.TreeViewDto;
@@ -563,14 +564,17 @@ public class ProcessDefinitionServiceImpl extends BaseServiceImpl implements Pro
                                                                         String otherParamsJson,
                                                                         Integer userId,
                                                                         Integer pageNo,
-                                                                        Integer pageSize) {
+                                                                        Integer pageSize,
+                                                                        String orderBy,
+                                                                        String order,
+                                                                        String groupName) {
 
         // check user access for project
         projectService.checkProjectAndAuthThrowException(loginUser, projectCode, WORKFLOW_DEFINITION);
 
         PageListingResult<ProcessDefinition> processDefinitionsPageListingResult =
                 processDefinitionDao.listingProcessDefinition(
-                        pageNo, pageSize, searchVal, userId, projectCode);
+                        pageNo, pageSize, searchVal, userId, projectCode, orderBy, order, groupName);
         List<ProcessDefinition> processDefinitions = processDefinitionsPageListingResult.getRecords();
 
         List<Long> processDefinitionCodes =
@@ -2585,6 +2589,12 @@ public class ProcessDefinitionServiceImpl extends BaseServiceImpl implements Pro
         result.put(DATA_LIST, resultMap);
         putMsg(result, Status.SUCCESS);
         return result;
+    }
+
+    @Override
+    public Result<List<String>> allGroupNames(String projectCode) {
+        List<ProcessDefinition> processDefinitions = this.processDefinitionMapper.selectList(new LambdaQueryWrapper<ProcessDefinition>().eq(ProcessDefinition::getProjectCode, projectCode));
+        return Result.success(processDefinitions.stream().map(ProcessDefinition::getGroupName).filter(StringUtils::isNotBlank).distinct().collect(Collectors.toList()));
     }
 
     /**

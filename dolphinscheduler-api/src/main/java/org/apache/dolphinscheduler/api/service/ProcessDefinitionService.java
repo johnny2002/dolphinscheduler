@@ -115,7 +115,10 @@ public interface ProcessDefinitionService {
                                                                  String otherParamsJson,
                                                                  Integer userId,
                                                                  Integer pageNo,
-                                                                 Integer pageSize);
+                                                                 Integer pageSize,
+                                                                 String orderBy,
+                                                                 String order,
+                                                                 String groupName);
 
     /**
      * Filter resource process definitions
@@ -429,4 +432,6 @@ public interface ProcessDefinitionService {
      * @return variables data
      */
     Map<String, Object> viewVariables(User loginUser, long projectCode, long code);
+
+    Result<List<String>> allGroupNames(String projectCode);
 }
