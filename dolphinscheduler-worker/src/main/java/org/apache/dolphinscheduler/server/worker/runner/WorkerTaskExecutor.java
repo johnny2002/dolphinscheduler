@@ -17,13 +17,8 @@
 
 package org.apache.dolphinscheduler.server.worker.runner;
 
-import static ch.qos.logback.classic.ClassicConstants.FINALIZE_SESSION_MARKER;
-import static org.apache.dolphinscheduler.common.constants.Constants.DRY_RUN_FLAG_YES;
-import static org.apache.dolphinscheduler.common.constants.Constants.K8S_CONFIG_REGEX;
-import static org.apache.dolphinscheduler.common.constants.Constants.SINGLE_SLASH;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.dolphinscheduler.common.context.GlobalParametersContext;
+import com.google.common.base.Strings;
+import lombok.NonNull;
 import org.apache.dolphinscheduler.common.enums.WarningType;
 import org.apache.dolphinscheduler.common.log.SensitiveDataConverter;
 import org.apache.dolphinscheduler.common.log.remote.RemoteLogUtils;
@@ -36,13 +31,7 @@ import org.apache.dolphinscheduler.extract.base.utils.Host;
 import org.apache.dolphinscheduler.extract.master.transportor.ITaskInstanceExecutionEvent;
 import org.apache.dolphinscheduler.plugin.datasource.api.utils.CommonUtils;
 import org.apache.dolphinscheduler.plugin.storage.api.StorageOperate;
-import org.apache.dolphinscheduler.plugin.task.api.AbstractTask;
-import org.apache.dolphinscheduler.plugin.task.api.TaskCallBack;
-import org.apache.dolphinscheduler.plugin.task.api.TaskChannel;
-import org.apache.dolphinscheduler.plugin.task.api.TaskException;
-import org.apache.dolphinscheduler.plugin.task.api.TaskExecutionContext;
-import org.apache.dolphinscheduler.plugin.task.api.TaskPluginException;
-import org.apache.dolphinscheduler.plugin.task.api.TaskPluginManager;
+import org.apache.dolphinscheduler.plugin.task.api.*;
 import org.apache.dolphinscheduler.plugin.task.api.enums.Direct;
 import org.apache.dolphinscheduler.plugin.task.api.enums.TaskExecutionStatus;
 import org.apache.dolphinscheduler.plugin.task.api.log.TaskInstanceLogHeader;
@@ -57,7 +46,10 @@ import org.apache.dolphinscheduler.server.worker.registry.WorkerRegistryClient;
 import org.apache.dolphinscheduler.server.worker.rpc.WorkerMessageSender;
 import org.apache.dolphinscheduler.server.worker.utils.TaskExecutionContextUtils;
 import org.apache.dolphinscheduler.server.worker.utils.TaskFilesTransferUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
@@ -65,14 +57,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.annotation.Nullable;
-
-import lombok.NonNull;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Strings;
+import static ch.qos.logback.classic.ClassicConstants.FINALIZE_SESSION_MARKER;
+import static org.apache.dolphinscheduler.common.constants.Constants.*;
 
 public abstract class WorkerTaskExecutor implements Runnable {
 
@@ -113,8 +99,6 @@ public abstract class WorkerTaskExecutor implements Runnable {
         WorkerTaskExecutorHolder.remove(taskExecutionContext.getTaskInstanceId());
         log.info("Remove the current task execute context from worker cache");
         clearTaskExecPathIfNeeded();
-
-        GlobalParametersContext.clearParameters();
     }
 
     protected void afterThrowing(Throwable throwable) throws TaskException {
@@ -128,8 +112,6 @@ public abstract class WorkerTaskExecutor implements Runnable {
                 ITaskInstanceExecutionEvent.TaskInstanceExecutionEventType.FINISH);
         log.info("Get a exception when execute the task, will send the task status: {} to master: {}",
                 TaskExecutionStatus.FAILURE.name(), taskExecutionContext.getHost());
-
-        GlobalParametersContext.clearParameters();
     }
 
     protected boolean cancelTask() {
@@ -213,12 +195,6 @@ public abstract class WorkerTaskExecutor implements Runnable {
                 params.put(key, value.getValue());
             });
         }
-
-        // 项目级别参数
-        GlobalParametersContext.setParameters(params);
-
-        // 全局参数
-        GlobalParametersContext.setParameters(taskExecutionContext.getGlobalParams());
     }
 
     protected void beforeExecute() {
