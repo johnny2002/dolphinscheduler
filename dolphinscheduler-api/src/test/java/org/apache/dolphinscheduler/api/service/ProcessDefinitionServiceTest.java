@@ -784,7 +784,7 @@ public class ProcessDefinitionServiceTest extends BaseServiceTestTool {
 
         try {
             processDefinitionService.updateProcessDefinition(user, projectCode, "test", 1,
-                    "", "", "", 0, null, "", ProcessExecutionTypeEnum.PARALLEL);
+                    "", "", "", 0, null, "", ProcessExecutionTypeEnum.PARALLEL, null);
             Assertions.fail();
         } catch (ServiceException ex) {
             Assertions.assertEquals(Status.DATA_IS_NOT_VALID.getCode(), ex.getCode());

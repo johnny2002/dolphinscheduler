@@ -118,6 +118,7 @@ public class ProcessDefinitionController extends BaseController {
     public Result createProcessDefinition(@Parameter(hidden = true) @RequestAttribute(value = Constants.SESSION_USER) User loginUser,
                                           @Parameter(name = "projectCode", description = "PROJECT_CODE", required = true) @PathVariable long projectCode,
                                           @RequestParam(value = "name", required = true) String name,
+                                          @RequestParam(value = "groupName") String groupName,
                                           @RequestParam(value = "description", required = false) String description,
                                           @RequestParam(value = "globalParams", required = false, defaultValue = "[]") String globalParams,
                                           @RequestParam(value = "locations", required = false) String locations,
@@ -128,7 +129,7 @@ public class ProcessDefinitionController extends BaseController {
                                           @RequestParam(value = "executionType", defaultValue = "PARALLEL") ProcessExecutionTypeEnum executionType) {
         Map<String, Object> result = processDefinitionService.createProcessDefinition(loginUser, projectCode, name,
                 description, globalParams,
-                locations, timeout, taskRelationJson, taskDefinitionJson, otherParamsJson, executionType);
+                locations, timeout, taskRelationJson, taskDefinitionJson, otherParamsJson, executionType, groupName);
         return returnDataList(result);
     }
 
@@ -240,6 +241,7 @@ public class ProcessDefinitionController extends BaseController {
     public Result updateProcessDefinition(@Parameter(hidden = true) @RequestAttribute(value = Constants.SESSION_USER) User loginUser,
                                           @Parameter(name = "projectCode", description = "PROJECT_CODE", required = true) @PathVariable long projectCode,
                                           @RequestParam(value = "name", required = true) String name,
+                                          @RequestParam(value = "groupName") String groupName,
                                           @PathVariable(value = "code", required = true) long code,
                                           @RequestParam(value = "description", required = false) String description,
                                           @RequestParam(value = "globalParams", required = false, defaultValue = "[]") String globalParams,
@@ -252,7 +254,7 @@ public class ProcessDefinitionController extends BaseController {
 
         Map<String, Object> result = processDefinitionService.updateProcessDefinition(loginUser, projectCode, name,
                 code, description, globalParams,
-                locations, timeout, taskRelationJson, taskDefinitionJson, executionType);
+                locations, timeout, taskRelationJson, taskDefinitionJson, executionType, groupName);
         // If the update fails, the result will be returned directly
         if (result.get(Constants.STATUS) != Status.SUCCESS) {
             return returnDataList(result);

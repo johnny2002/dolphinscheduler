@@ -71,6 +71,7 @@ export default defineComponent({
 
     const formValue = ref<SaveForm>({
       name: '',
+      groupName: '',
       description: '',
       executionType: 'PARALLEL',
       timeoutFlag: false,
@@ -145,6 +146,7 @@ export default defineComponent({
       const process = props.definition?.processDefinition
       if (process) {
         formValue.value.name = process.name
+        formValue.value.groupName = process.groupName
         formValue.value.description = process.description
         formValue.value.executionType = process.executionType || 'PARALLEL'
         if (process.timeout && process.timeout > 0) {
@@ -183,6 +185,13 @@ export default defineComponent({
               v-model:value={formValue.value.name}
               class='input-name'
             />
+          </NFormItem>
+          <NFormItem label={t('project.workflow.groupName')} path='groupName'>
+              <NInput
+                  allowInput={trim}
+                  v-model:value={formValue.value.groupName}
+                  class='input-groupName'
+              />
           </NFormItem>
           <NFormItem label={t('project.dag.description')} path='description'>
             <NInput

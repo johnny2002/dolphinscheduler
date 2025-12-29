@@ -69,6 +69,7 @@ export default defineComponent({
           taskRelationJson: JSON.stringify(connects),
           locations: JSON.stringify(locations),
           name: saveForm.name,
+          groupName: saveForm.groupName,
           executionType: saveForm.executionType,
           description: saveForm.description,
           globalParams: JSON.stringify(globalParams),

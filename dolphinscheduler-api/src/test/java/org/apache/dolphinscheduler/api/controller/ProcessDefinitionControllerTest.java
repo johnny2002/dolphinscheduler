@@ -99,11 +99,11 @@ public class ProcessDefinitionControllerTest {
         Mockito.when(
                 processDefinitionService.createProcessDefinition(user, projectCode, name, description, globalParams,
                         locations, timeout, relationJson, taskDefinitionJson, "",
-                        ProcessExecutionTypeEnum.PARALLEL))
+                        ProcessExecutionTypeEnum.PARALLEL, null))
                 .thenReturn(result);
 
         Result response =
-                processDefinitionController.createProcessDefinition(user, projectCode, name, description, globalParams,
+                processDefinitionController.createProcessDefinition(user, projectCode, name, null, description, globalParams,
                         locations, timeout, relationJson, taskDefinitionJson, "",
                         ProcessExecutionTypeEnum.PARALLEL);
         Assertions.assertEquals(Status.SUCCESS.getCode(), response.getCode().intValue());
@@ -169,9 +169,9 @@ public class ProcessDefinitionControllerTest {
         Mockito.when(processDefinitionService.updateProcessDefinition(user, projectCode, name, code, description,
                 globalParams,
                 locations, timeout, relationJson, taskDefinitionJson,
-                ProcessExecutionTypeEnum.PARALLEL)).thenReturn(result);
+                ProcessExecutionTypeEnum.PARALLEL, null)).thenReturn(result);
 
-        Result response = processDefinitionController.updateProcessDefinition(user, projectCode, name, code,
+        Result response = processDefinitionController.updateProcessDefinition(user, projectCode, name, null, code,
                 description, globalParams,
                 locations, timeout, relationJson, taskDefinitionJson, ProcessExecutionTypeEnum.PARALLEL,
                 ReleaseState.OFFLINE);

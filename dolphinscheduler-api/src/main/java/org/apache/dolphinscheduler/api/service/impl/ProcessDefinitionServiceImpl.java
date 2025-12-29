@@ -273,7 +273,8 @@ public class ProcessDefinitionServiceImpl extends BaseServiceImpl implements Pro
                                                        String taskRelationJson,
                                                        String taskDefinitionJson,
                                                        String otherParamsJson,
-                                                       ProcessExecutionTypeEnum executionType) {
+                                                       ProcessExecutionTypeEnum executionType,
+                                                       String groupName) {
         Project project = projectMapper.queryByCode(projectCode);
 
         // check if user have write perm for project
@@ -299,7 +300,7 @@ public class ProcessDefinitionServiceImpl extends BaseServiceImpl implements Pro
         long processDefinitionCode = CodeGenerateUtils.genCode();
         ProcessDefinition processDefinition =
                 new ProcessDefinition(projectCode, name, processDefinitionCode, description,
-                        globalParams, locations, timeout, loginUser.getId());
+                        globalParams, locations, timeout, loginUser.getId(), groupName);
         processDefinition.setExecutionType(executionType);
 
         result = createDagDefine(loginUser, taskRelationList, processDefinition, taskDefinitionLogs);
@@ -758,7 +759,8 @@ public class ProcessDefinitionServiceImpl extends BaseServiceImpl implements Pro
                                                        int timeout,
                                                        String taskRelationJson,
                                                        String taskDefinitionJson,
-                                                       ProcessExecutionTypeEnum executionType) {
+                                                       ProcessExecutionTypeEnum executionType,
+                                                       String groupName) {
         Project project = projectMapper.queryByCode(projectCode);
         // check if user have write perm for project
         Map<String, Object> result = new HashMap<>();
@@ -801,7 +803,7 @@ public class ProcessDefinitionServiceImpl extends BaseServiceImpl implements Pro
         }
         ProcessDefinition processDefinitionDeepCopy =
                 JSONUtils.parseObject(JSONUtils.toJsonString(processDefinition), ProcessDefinition.class);
-        processDefinition.set(projectCode, name, description, globalParams, locations, timeout);
+        processDefinition.set(projectCode, name, description, globalParams, locations, timeout, groupName);
         processDefinition.setExecutionType(executionType);
         result = updateDagDefine(loginUser, taskRelationList, processDefinition, processDefinitionDeepCopy,
                 taskDefinitionLogs);
@@ -1233,7 +1235,8 @@ public class ProcessDefinitionServiceImpl extends BaseServiceImpl implements Pro
                     CodeGenerateUtils.genCode(),
                     "",
                     "[]", null,
-                    0, loginUser.getId());
+                    0, loginUser.getId(),
+                    null);
 
             ZipEntry entry;
             while ((entry = zIn.getNextEntry()) != null) {

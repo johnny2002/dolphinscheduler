@@ -269,12 +269,12 @@ public class PythonGateway {
             processDefinitionService.updateProcessDefinition(user, projectCode, name,
                     processDefinitionCode, description, globalParams,
                     null, timeout, taskRelationJson, taskDefinitionJson,
-                    executionTypeEnum);
+                    executionTypeEnum, null);
         } else {
             Map<String, Object> result = processDefinitionService.createProcessDefinition(user, projectCode, name,
                     description, globalParams,
                     null, timeout, taskRelationJson, taskDefinitionJson, otherParamsJson,
-                    executionTypeEnum);
+                    executionTypeEnum, null);
             if (result.get(Constants.STATUS) != Status.SUCCESS) {
                 log.error(result.get(Constants.MSG).toString());
                 throw new ServiceException(result.get(Constants.MSG).toString());

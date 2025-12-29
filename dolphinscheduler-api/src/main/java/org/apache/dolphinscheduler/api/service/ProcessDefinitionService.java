@@ -65,7 +65,8 @@ public interface ProcessDefinitionService {
                                                 String taskRelationJson,
                                                 String taskDefinitionJson,
                                                 String otherParamsJson,
-                                                ProcessExecutionTypeEnum executionType);
+                                                ProcessExecutionTypeEnum executionType,
+                                                String groupName);
 
     /**
      * create process definition V2
@@ -218,7 +219,8 @@ public interface ProcessDefinitionService {
                                                 int timeout,
                                                 String taskRelationJson,
                                                 String taskDefinitionJson,
-                                                ProcessExecutionTypeEnum executionType);
+                                                ProcessExecutionTypeEnum executionType,
+                                                String groupName);
 
     /**
      * verify process definition name unique
