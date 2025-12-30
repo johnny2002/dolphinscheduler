@@ -373,9 +373,9 @@ public class ProcessDefinitionControllerTest {
         PageInfo<ProcessDefinition> pageInfo = new PageInfo<>(1, 10);
 
         Mockito.when(processDefinitionService.queryProcessDefinitionListPaging(user, projectCode, searchVal, "", userId,
-                pageNo, pageSize, null, null, null)).thenReturn(pageInfo);
+                pageNo, pageSize, null, null, null,null)).thenReturn(pageInfo);
         Result<PageInfo<ProcessDefinition>> response = processDefinitionController
-                .queryProcessDefinitionListPaging(user, projectCode, searchVal, "", userId, pageNo, pageSize, null, null, null);
+                .queryProcessDefinitionListPaging(user, projectCode, searchVal, "", userId, pageNo, pageSize, null, null,null,null);
 
         Assertions.assertTrue(response != null && response.isSuccess());
     }

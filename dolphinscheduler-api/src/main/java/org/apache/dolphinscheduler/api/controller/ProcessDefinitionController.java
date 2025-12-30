@@ -493,21 +493,22 @@ public class ProcessDefinitionController extends BaseController {
                                                                                 @RequestParam("pageSize") Integer pageSize,
                                                                                 @RequestParam(value = "orderBy", required = false) String orderBy,
                                                                                 @RequestParam(value = "order", required = false) String order,
-                                                                                @RequestParam(value = "groupName", required = false) String groupName) {
+                                                                                @RequestParam(value = "groupName", required = false) String groupName,
+                                                                                @RequestParam(value = "releaseState", required = false) String releaseState) {
 
         checkPageParams(pageNo, pageSize);
         searchVal = ParameterUtils.handleEscapes(searchVal);
 
         PageInfo<ProcessDefinition> pageInfo = processDefinitionService.queryProcessDefinitionListPaging(
-                loginUser, projectCode, searchVal, otherParamsJson, userId, pageNo, pageSize, StrUtil.toUnderlineCase(orderBy), order, groupName);
+                loginUser, projectCode, searchVal, otherParamsJson, userId, pageNo, pageSize, StrUtil.toUnderlineCase(orderBy), order, groupName, releaseState);
         return Result.success(pageInfo);
 
     }
 
     @GetMapping("/group-names")
     @ResponseStatus(HttpStatus.OK)
-    public Result<List<String>> allGroupNames(@PathVariable String projectCode){
-        return processDefinitionService.allGroupNames(projectCode);
+    public Result<List<String>> allGroupNames(@PathVariable String projectCode, @RequestParam(value = "groupName", required = false) String groupName){
+        return processDefinitionService.allGroupNames(projectCode, groupName);
     }
 
 

@@ -82,6 +82,9 @@
         <if test="groupName != null and groupName != ''">
             and group_name = #{groupName}
         </if>
+        <if test="releaseState != null and releaseState != ''">
+            and release_state = #{releaseState}
+        </if>
         <choose>
             <when test="orderBy != null and orderBy != '' and order != null and order != ''">
                 order by ${orderBy} ${order}

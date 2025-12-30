@@ -74,7 +74,7 @@ export function useTable() {
     sortField: ref(''),
     sortOrder: ref(''), // 'asc' | 'desc' | false
     filterOptions: ref([]),           // 存储所有可用的分组选项
-    selectedFilter: ref<string[]>([]), // 当前选中的筛选项
+    selectedFilter: ref<Map<string, string>>(new Map()), // 当前选中的筛选项
     groupNameFilterOptions: ref([]),  // groupName 列的筛选选项
     dependenciesData: ref({
       showRef: false,
@@ -210,7 +210,9 @@ export function useTable() {
         title: t('project.workflow.status'),
         key: 'releaseState',
         ...COLUMN_WIDTH_CONFIG['state'],
-        sorter: true,
+        filterMultiple: false,  // 单选筛选
+        filterOptions: [{label: '上线', value: '1'},{label: '下线', value: '0'}],      // 筛选项将在获取数据后填充
+        filter: true,
         render: (row) =>
           row.releaseState === 'ONLINE'
             ? h(
@@ -309,8 +311,8 @@ export function useTable() {
     // 添加获取所有分组名称的方法
     const loadAllGroupNames = async () => {
         try {
-            const res = await getAllGroupNames(variables.projectCode)
-            const allGroupNames = res.data.map((name: string) => ({
+            const res = await getAllGroupNames(variables.projectCode, null) as any
+            const allGroupNames = res.map((name: string) => ({
                 label: name,
                 value: name
             }))
@@ -601,8 +603,9 @@ export function useTable() {
         ...params,
     }
     // 添加筛选参数
-    if (variables.selectedFilter.length > 0) {
-        requestParams.groupName = variables.selectedFilter[0]  // 假设后端支持按 groupName 筛选
+    if (variables.selectedFilter.size > 0) {
+        requestParams.groupName = variables.selectedFilter.get('groupName')  // 假设后端支持按 groupName 筛选
+        requestParams.releaseState = variables.selectedFilter.get('releaseState')
     }
     // 如果有排序字段，添加到请求参数中
     if (variables.sortField && variables.sortOrder) {

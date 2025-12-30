@@ -567,14 +567,15 @@ public class ProcessDefinitionServiceImpl extends BaseServiceImpl implements Pro
                                                                         Integer pageSize,
                                                                         String orderBy,
                                                                         String order,
-                                                                        String groupName) {
+                                                                        String groupName,
+                                                                        String releaseState) {
 
         // check user access for project
         projectService.checkProjectAndAuthThrowException(loginUser, projectCode, WORKFLOW_DEFINITION);
 
         PageListingResult<ProcessDefinition> processDefinitionsPageListingResult =
                 processDefinitionDao.listingProcessDefinition(
-                        pageNo, pageSize, searchVal, userId, projectCode, orderBy, order, groupName);
+                        pageNo, pageSize, searchVal, userId, projectCode, orderBy, order, groupName, releaseState);
         List<ProcessDefinition> processDefinitions = processDefinitionsPageListingResult.getRecords();
 
         List<Long> processDefinitionCodes =
@@ -2592,8 +2593,13 @@ public class ProcessDefinitionServiceImpl extends BaseServiceImpl implements Pro
     }
 
     @Override
-    public Result<List<String>> allGroupNames(String projectCode) {
-        List<ProcessDefinition> processDefinitions = this.processDefinitionMapper.selectList(new LambdaQueryWrapper<ProcessDefinition>().eq(ProcessDefinition::getProjectCode, projectCode));
+    public Result<List<String>> allGroupNames(String projectCode, String groupName) {
+        LambdaQueryWrapper<ProcessDefinition> wrapper = new LambdaQueryWrapper<ProcessDefinition>()
+                .eq(ProcessDefinition::getProjectCode, projectCode);
+        if(StringUtils.isNotBlank(groupName)){
+            wrapper.like(ProcessDefinition::getGroupName, groupName);
+        }
+        List<ProcessDefinition> processDefinitions = this.processDefinitionMapper.selectList(wrapper);
         return Result.success(processDefinitions.stream().map(ProcessDefinition::getGroupName).filter(StringUtils::isNotBlank).distinct().collect(Collectors.toList()));
     }
 

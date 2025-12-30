@@ -36,8 +36,8 @@ export function queryListPaging(params: PageReq & ListReq, code: number): any {
   })
 }
 
-export function getAllGroupNames(projectCode: number) {
-    return axios.get(`/projects/${projectCode}/process-definition/group-names`)
+export function getAllGroupNames(projectCode: number, groupName: string) {
+    return axios.get(`/projects/${projectCode}/process-definition/group-names?groupName=${groupName}`)
 }
 
 export function createProcessDefinition(

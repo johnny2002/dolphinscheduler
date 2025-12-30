@@ -35,10 +35,11 @@ import {
   NDynamicInput,
   NCheckbox,
   NGridItem,
-  NGrid
+  NGrid,
+  NAutoComplete
 } from 'naive-ui'
 import { useRoute } from 'vue-router'
-import { verifyName } from '@/service/modules/process-definition'
+import { verifyName, getAllGroupNames } from '@/service/modules/process-definition'
 import './x6-style.scss'
 import { positiveIntegerRegex } from '@/utils/regex'
 import type { SaveForm, WorkflowDefinition, WorkflowInstance } from './types'
@@ -81,6 +82,27 @@ export default defineComponent({
       sync: false
     })
     const formRef = ref()
+
+    const groupNames = ref<string[]>([])
+    const groupNameLoading = ref(false)
+
+    const fetchGroupNames = async (inputValue: string) => {
+        if (!inputValue) {
+            groupNames.value = []
+            return
+        }
+
+        groupNameLoading.value = true
+        try {
+            const response = await getAllGroupNames(projectCode, inputValue) as any
+            groupNames.value = response || []
+        } catch (error) {
+            console.error('Failed to fetch group names:', error)
+            groupNames.value = []
+        } finally {
+            groupNameLoading.value = false
+        }
+    }
 
     const rule = {
       name: {
@@ -186,13 +208,28 @@ export default defineComponent({
               class='input-name'
             />
           </NFormItem>
-          <NFormItem label={t('project.workflow.groupName')} path='groupName'>
-              <NInput
-                  allowInput={trim}
-                  v-model:value={formValue.value.groupName}
-                  class='input-groupName'
-              />
-          </NFormItem>
+            <NFormItem label={t('project.workflow.groupName')} path='groupName'>
+                <NAutoComplete
+                    v-model:value={formValue.value.groupName}
+                    options={groupNames.value.map(name => ({ label: name, value: name }))}
+                    onInput={(value: string) => fetchGroupNames(value)}
+                    loading={groupNameLoading.value}
+                    placeholder={t('project.workflow.groupName')}
+                    class='input-groupName'
+                >
+                    {{
+                        default: ({ handleInput, handleFocus, handleBlur }: any) => (
+                            <NInput
+                                allowInput={trim}
+                                onInput={handleInput}
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                                placeholder={t('project.workflow.groupName')}
+                            />
+                        )
+                    }}
+                </NAutoComplete>
+            </NFormItem>
           <NFormItem label={t('project.dag.description')} path='description'>
             <NInput
               allowInput={trim}

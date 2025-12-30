@@ -22,6 +22,7 @@ export interface IDefinitionParam {
   orderBy?: string
   order?: string
   groupName?: string
+  releaseState?: string
 }
 
 export interface IDefinitionData {

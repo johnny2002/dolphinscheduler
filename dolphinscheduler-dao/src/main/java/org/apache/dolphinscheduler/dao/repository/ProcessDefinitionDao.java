@@ -42,7 +42,8 @@ public interface ProcessDefinitionDao extends IDao<ProcessDefinition> {
                                                                   long projectCode,
                                                                   String orderBy,
                                                                   String order,
-                                                                  String groupName);
+                                                                  String groupName,
+                                                                  String releaseState);
 
     Optional<ProcessDefinition> queryByCode(long code);
 

@@ -108,7 +108,8 @@ public interface ProcessDefinitionMapper extends BaseMapper<ProcessDefinition> {
                                                    @Param("projectCode") long projectCode,
                                                    @Param("orderBy") String orderBy,
                                                    @Param("order") String order,
-                                                   @Param("groupName") String groupName);
+                                                   @Param("groupName") String groupName,
+                                                   @Param("releaseState") String releaseState);
 
     /**
      * Filter process definitions

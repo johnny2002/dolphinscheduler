@@ -75,7 +75,8 @@ export default defineComponent({
         searchVal: variables.searchVal,
         orderBy: variables.sortField,
         order: variables.sortOrder,
-        groupName: variables.selectedFilter
+        groupName: variables.selectedFilter.get('groupName'),
+        releaseState: variables.selectedFilter.get('releaseState'),
       }
 
       getTableData(json as any)
@@ -262,9 +263,14 @@ export default defineComponent({
               onUpdate:filters={(filters: any) => {
                   // 处理筛选变化
                   if (filters.groupName) {
-                      this.selectedFilter = filters.groupName
+                      this.selectedFilter.set('groupName', filters.groupName)
                   } else {
-                      this.selectedFilter = []
+                      this.selectedFilter.delete('groupName')
+                  }
+                  if (filters.releaseState) {
+                      this.selectedFilter.set('releaseState', filters.releaseState)
+                  } else {
+                      this.selectedFilter.delete('releaseState')
                   }
                   this.requestData()
               }}

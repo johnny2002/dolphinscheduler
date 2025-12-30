@@ -245,7 +245,7 @@ public class ProcessDefinitionMapperTest extends BaseDaoTest {
         insertOne("def 1");
         Page<ProcessDefinition> page = new Page(1, 3);
         IPage<ProcessDefinition> processDefinitionIPage =
-                processDefinitionMapper.queryDefineListPaging(page, "def", 101, 1010L, null,null,null);
+                processDefinitionMapper.queryDefineListPaging(page, "def", 101, 1010L, null,null,null,null);
         Assertions.assertNotEquals(0, processDefinitionIPage.getTotal());
     }
 
