@@ -95,7 +95,7 @@ export default defineComponent({
         groupNameLoading.value = true
         try {
             const response = await getAllGroupNames(projectCode, inputValue) as any
-            groupNames.value = response || []
+            groupNames.value = response? response : []
         } catch (error) {
             console.error('Failed to fetch group names:', error)
             groupNames.value = []
@@ -169,6 +169,10 @@ export default defineComponent({
       if (process) {
         formValue.value.name = process.name
         formValue.value.groupName = process.groupName
+        // 加载已有组名时也获取建议列表
+        if (process.groupName) {
+          fetchGroupNames(process.groupName)
+        }
         formValue.value.description = process.description
         formValue.value.executionType = process.executionType || 'PARALLEL'
         if (process.timeout && process.timeout > 0) {
@@ -191,6 +195,16 @@ export default defineComponent({
       () => props.definition?.processDefinition,
       () => updateModalData()
     )
+    
+    // 监听 groupName 变化，当值改变时获取建议
+    watch(
+      () => formValue.value.groupName,
+      (newVal) => {
+        if (newVal && newVal !== props.definition?.processDefinition?.groupName) {
+          fetchGroupNames(newVal)
+        }
+      }
+    )
 
     return () => (
       <Modal
@@ -209,27 +223,14 @@ export default defineComponent({
             />
           </NFormItem>
             <NFormItem label={t('project.workflow.groupName')} path='groupName'>
-                <NAutoComplete
-                    v-model:value={formValue.value.groupName}
-                    options={groupNames.value.map(name => ({ label: name, value: name }))}
-                    onInput={(value: string) => fetchGroupNames(value)}
-                    loading={groupNameLoading.value}
-                    placeholder={t('project.workflow.groupName')}
-                    class='input-groupName'
-                >
-                    {{
-                        default: ({ handleInput, handleFocus, handleBlur }: any) => (
-                            <NInput
-                                allowInput={trim}
-                                onInput={handleInput}
-                                onFocus={handleFocus}
-                                onBlur={handleBlur}
-                                placeholder={t('project.workflow.groupName')}
-                            />
-                        )
-                    }}
-                </NAutoComplete>
-            </NFormItem>
+            <NAutoComplete
+              v-model:value={formValue.value.groupName}
+              options={groupNames.value.map(name => ({ label: name, value: name }))}
+              onInput={(value: string) => fetchGroupNames(value)}
+              placeholder={t('project.workflow.groupName')}
+              class='input-groupName'
+            />
+          </NFormItem>
           <NFormItem label={t('project.dag.description')} path='description'>
             <NInput
               allowInput={trim}
