@@ -138,7 +138,7 @@ const BatchTaskInstance = defineComponent({
       getTableData()
       setIntervalP = setInterval(() => {
         getTableData()
-      }, 3000)
+      }, 3000) as any
     })
 
     onUnmounted(() => {

@@ -274,7 +274,7 @@ export default defineComponent({
                 nodeVariables.limit += 1000
                 nodeVariables.skipLineNum += 1000
                 getLogs(logTimer)
-              }, logTimer * 1000)
+              }, logTimer * 1000) as any
             }
           }
         }),

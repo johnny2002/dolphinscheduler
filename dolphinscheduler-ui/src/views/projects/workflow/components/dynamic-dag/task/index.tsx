@@ -107,7 +107,7 @@ const TaskForm = defineComponent({
                     allowInput={this.trim}
                     placeholder={f.placeholder ? this.t(f.placeholder) : ''}
                     defaultValue={this.setDefaultValue(f)}
-                    onUpdateValue={(v) => this.onUpdateValue(v, f)}
+                    onUpdateValue={(v: any) => this.onUpdateValue(v, f)}
                     clearable={f.clearable}
                   />
                 )}
@@ -115,7 +115,7 @@ const TaskForm = defineComponent({
                   <NSelect
                     placeholder={f.placeholder ? this.t(f.placeholder) : ''}
                     defaultValue={this.setDefaultValue(f)}
-                    onUpdateValue={(v) => this.onUpdateValue(v, f)}
+                    onUpdateValue={(v: any) => this.onUpdateValue(v, f)}
                     options={
                       f.optionsLocale
                         ? f.options.map((o: SelectOption) => {
@@ -131,7 +131,7 @@ const TaskForm = defineComponent({
                 {f.type === 'studio' && (
                   <MonacoEditor
                     defaultValue={this.setDefaultValue(f)}
-                    onUpdateValue={(v) => this.onUpdateValue(v, f)}
+                    onUpdateValue={(v: any) => this.onUpdateValue(v, f)}
                   />
                 )}
               </NFormItem>

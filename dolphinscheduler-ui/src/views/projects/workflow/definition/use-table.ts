@@ -52,7 +52,7 @@ export function useTable() {
   const { getDependentTaskLinks } = useDependencies()
 
   const variables = reactive({
-    columns: [],
+    columns: [] as any[],
     tableWidth: DefaultTableWidth,
     checkedRowKeys: [] as Array<RowKey>,
     row: {},
@@ -310,7 +310,7 @@ export function useTable() {
     const loadAllGroupNames = async () => {
         try {
             const res = await getAllGroupNames(variables.projectCode)
-            const allGroupNames = res.map((name: string) => ({
+            const allGroupNames = res.data.map((name: string) => ({
                 label: name,
                 value: name
             }))
@@ -624,7 +624,7 @@ export function useTable() {
 
   const updateColumnFilterOptions = (uniqueGroupNames: any[]) => {
       // 找到 groupName 列并更新其筛选选项
-      const groupNameColumn: any = variables.columns.find(col => col.key === 'groupName')
+      const groupNameColumn: any = variables.columns.find(col => col && col.key === 'groupName')
       if (groupNameColumn) {
           groupNameColumn.filterOptions = uniqueGroupNames
       }

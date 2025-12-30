@@ -78,7 +78,7 @@ export default defineComponent({
         groupName: variables.selectedFilter
       }
 
-      getTableData(json)
+      getTableData(json as any)
 
       // 缓存当前请求参数
       sessionStorage.setItem(CACHE_KEY, JSON.stringify(json))
@@ -245,7 +245,7 @@ export default defineComponent({
           <NSpace vertical>
             <NDataTable
               loading={loadingRef}
-              rowKey={(row) => row.code}
+              rowKey={(row: any) => row.code}
               columns={this.columns}
               data={this.tableData}
               striped

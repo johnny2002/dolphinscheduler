@@ -147,7 +147,7 @@ const BatchTaskInstance = defineComponent({
                 variables.skipLineNum = 0
                 variables.logLoadingRef = true
                 getLogs(row, logTimer)
-              }, logTimer * 1000)
+              }, logTimer * 1000) as any
             }
           }
         }),
