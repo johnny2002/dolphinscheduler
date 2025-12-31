@@ -526,11 +526,11 @@ export default defineComponent({
                 >
                   <NRadioGroup v-model:value={this.startForm.executionOrder}>
                     <NSpace>
+                      <NRadio value={'ASC_ORDER'}>
+                          {t('project.workflow.ascending_order')}
+                      </NRadio>
                       <NRadio value={'DESC_ORDER'}>
                         {t('project.workflow.descending_order')}
-                      </NRadio>
-                      <NRadio value={'ASC_ORDER'}>
-                        {t('project.workflow.ascending_order')}
                       </NRadio>
                     </NSpace>
                   </NRadioGroup>
