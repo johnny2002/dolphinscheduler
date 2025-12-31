@@ -311,7 +311,7 @@ export function useTable() {
     // 添加获取所有分组名称的方法
     const loadAllGroupNames = async () => {
         try {
-            const res = await getAllGroupNames(variables.projectCode, null) as any
+            const res = await getAllGroupNames(variables.projectCode, '') as any
             const allGroupNames = res.map((name: string) => ({
                 label: name,
                 value: name
@@ -604,8 +604,8 @@ export function useTable() {
     }
     // 添加筛选参数
     if (variables.selectedFilter.size > 0) {
-        requestParams.groupName = variables.selectedFilter.get('groupName')  // 假设后端支持按 groupName 筛选
-        requestParams.releaseState = variables.selectedFilter.get('releaseState')
+        requestParams.groupName = variables.selectedFilter.get('groupName') ? variables.selectedFilter.get('groupName') : ''  // 假设后端支持按 groupName 筛选
+        requestParams.releaseState = variables.selectedFilter.get('releaseState') ? variables.selectedFilter.get('releaseState') : ''
     }
     // 如果有排序字段，添加到请求参数中
     if (variables.sortField && variables.sortOrder) {
