@@ -15,8 +15,16 @@
  * limitations under the License.
  */
 
-import { defineComponent, PropType, toRefs } from 'vue'
-import { NSpace, NTooltip, NButton, NIcon, NPopconfirm } from 'naive-ui'
+import { defineComponent, PropType, toRefs, h } from 'vue'
+import { 
+  NSpace, 
+  NTooltip, 
+  NButton, 
+  NIcon, 
+  NPopconfirm, 
+  NDropdown,
+  useDialog 
+} from 'naive-ui'
 import {
   DeleteOutlined,
   DownloadOutlined,
@@ -29,7 +37,8 @@ import {
   ApartmentOutlined,
   UploadOutlined,
   ArrowUpOutlined,
-  ArrowDownOutlined
+  ArrowDownOutlined,
+  MoreOutlined
 } from '@vicons/antd'
 import { useI18n } from 'vue-i18n'
 import { IDefinitionData } from '../types'
@@ -57,6 +66,10 @@ export default defineComponent({
     'gotoWorkflowTree'
   ],
   setup(props, ctx) {
+    const { t } = useI18n()
+    
+    const dialog = useDialog()
+
     const handleEditWorkflow = () => {
       ctx.emit('editWorkflow')
     }
@@ -97,7 +110,213 @@ export default defineComponent({
       ctx.emit('releaseScheduler')
     }
 
+    const confirmDeleteWorkflow = () => {
+      dialog.warning({
+        title: t('project.workflow.delete_confirm'), 
+        content: "",
+        positiveText: t('project.workflow.delete_confirm'),
+        negativeText: t('project.workflow.delete_cancel'),
+        onPositiveClick: () => {
+          handleDeleteWorkflow()
+        },
+        onNegativeClick: () => {
+          console.log('用户取消了删除操作')
+        }
+      })
+    }
+
+    // 创建小尺寸的图标组件
+    const createSmallIcon = (iconComponent: any, size = '14') => {
+      return h(NIcon, { size }, () => h(iconComponent))
+    }
+
+    // 下拉菜单选项配置 - 使用自定义渲染缩小图标
+    const dropdownOptions = [
+      {
+        label: () => h('div', { 
+          style: { 
+            display: 'flex', 
+            alignItems: 'center',
+            padding: '6px 0'
+          } 
+        }, [
+          createSmallIcon(ClockCircleOutlined),
+          h('span', { 
+            style: { 
+              marginLeft: '8px',
+              fontSize: '13px'
+            } 
+          }, t('project.workflow.timing'))
+        ]),
+        key: 'timingWorkflow'
+      },
+      {
+        label: () => {
+          const scheduleReleaseState = props.row?.scheduleReleaseState
+          const isDisabled = !props.row?.schedule || props.row?.releaseState !== 'ONLINE'
+          
+          return h('div', { 
+            style: { 
+              display: 'flex', 
+              alignItems: 'center',
+              padding: '6px 0',
+              opacity: isDisabled ? 0.5 : 1
+            } 
+          }, [
+            createSmallIcon(scheduleReleaseState === 'ONLINE' ? ArrowDownOutlined : ArrowUpOutlined),
+            h('span', { 
+              style: { 
+                marginLeft: '8px',
+                fontSize: '13px'
+              } 
+            }, scheduleReleaseState === 'ONLINE'
+              ? t('project.workflow.time_down_line')
+              : t('project.workflow.time_up_line'))
+          ])
+        },
+        key: 'releaseScheduler',
+        props: {
+          disabled: !props.row?.schedule || props.row?.releaseState !== 'ONLINE'
+        }
+      },
+      {
+        type: 'divider',
+        key: 'divider1'
+      },
+      {
+        label: () => h('div', { 
+          style: { 
+            display: 'flex', 
+            alignItems: 'center',
+            padding: '6px 0'
+          } 
+        }, [
+          createSmallIcon(CopyOutlined),
+          h('span', { 
+            style: { 
+              marginLeft: '8px',
+              fontSize: '13px'
+            } 
+          }, t('project.workflow.copy_workflow'))
+        ]),
+        key: 'copyWorkflow'
+      },
+      {
+        label: () => {
+          const isDeleteDisabled = props.row?.releaseState === 'ONLINE'
+          return h('div', { 
+            style: { 
+              display: 'flex', 
+              alignItems: 'center',
+              padding: '6px 0',
+              opacity: isDeleteDisabled ? 0.5 : 1
+            } 
+          }, [
+            createSmallIcon(DeleteOutlined),
+            h('span', { 
+              style: { 
+                marginLeft: '8px',
+                fontSize: '13px',
+                color: isDeleteDisabled ? '#ccc' : '#f56c6c'
+              } 
+            }, t('project.workflow.delete'))
+          ])
+        },
+        key: 'deleteWorkflow',
+        props: {
+          disabled: props.row?.releaseState === 'ONLINE'
+        }
+      },
+      {
+        type: 'divider',
+        key: 'divider2'
+      },
+      {
+        label: () => h('div', { 
+          style: { 
+            display: 'flex', 
+            alignItems: 'center',
+            padding: '6px 0'
+          } 
+        }, [
+          createSmallIcon(ApartmentOutlined),
+          h('span', { 
+            style: { 
+              marginLeft: '8px',
+              fontSize: '13px'
+            } 
+          }, t('project.workflow.tree_view'))
+        ]),
+        key: 'gotoWorkflowTree'
+      },
+      {
+        label: () => h('div', { 
+          style: { 
+            display: 'flex', 
+            alignItems: 'center',
+            padding: '6px 0'
+          } 
+        }, [
+          createSmallIcon(ExportOutlined),
+          h('span', { 
+            style: { 
+              marginLeft: '8px',
+              fontSize: '13px'
+            } 
+          }, t('project.workflow.export'))
+        ]),
+        key: 'exportWorkflow'
+      },
+      {
+        label: () => h('div', { 
+          style: { 
+            display: 'flex', 
+            alignItems: 'center',
+            padding: '6px 0'
+          } 
+        }, [
+          createSmallIcon(InfoCircleFilled),
+          h('span', { 
+            style: { 
+              marginLeft: '8px',
+              fontSize: '13px'
+            } 
+          }, t('project.workflow.version_info'))
+        ]),
+        key: 'versionWorkflow'
+      }
+    ]
+
+    const handleDropdownSelect = (key: string) => {
+      switch (key) {
+        case 'timingWorkflow':
+          handleTimingWorkflow()
+          break
+        case 'releaseScheduler':
+          handleReleaseScheduler()
+          break
+        case 'copyWorkflow':
+          handleCopyWorkflow()
+          break
+        case 'deleteWorkflow':
+          if (props.row?.releaseState !== 'ONLINE') {
+            confirmDeleteWorkflow()
+          }
+          break
+        case 'gotoWorkflowTree':
+          handleGotoWorkflowTree()
+          break
+        case 'exportWorkflow':
+          handleExportWorkflow()
+          break
+        case 'versionWorkflow':
+          handleVersionWorkflow()
+          break
+      }
+    }
+
     return {
+      t,
       handleEditWorkflow,
       handleStartWorkflow,
       handleTimingWorkflow,
@@ -108,20 +327,22 @@ export default defineComponent({
       handleExportWorkflow,
       handleGotoWorkflowTree,
       handleReleaseScheduler,
+      confirmDeleteWorkflow, 
+      handleDropdownSelect,
+      dropdownOptions,
+      createSmallIcon,
       ...toRefs(props)
     }
   },
   render() {
-    const { t } = useI18n()
     const releaseState = this.row?.releaseState
-    const scheduleReleaseState = this.row?.scheduleReleaseState
-    const schedule = this.row?.schedule
 
     return (
       <NSpace>
+        {/* 保留编辑按钮 */}
         <NTooltip trigger={'hover'}>
           {{
-            default: () => t('project.workflow.edit'),
+            default: () => this.t('project.workflow.edit'),
             trigger: () => (
               <NButton
                 size='small'
@@ -131,18 +352,19 @@ export default defineComponent({
                 onClick={this.handleEditWorkflow}
                 disabled={releaseState === 'ONLINE'}
                 class='btn-edit'
-                /* TODO: Edit workflow */
               >
-                <NIcon>
+                <NIcon size="16">
                   <FormOutlined />
                 </NIcon>
               </NButton>
             )
           }}
         </NTooltip>
+
+        {/* 保留运行按钮 */}
         <NTooltip trigger={'hover'}>
           {{
-            default: () => t('project.workflow.start'),
+            default: () => this.t('project.workflow.start'),
             trigger: () => (
               <NButton
                 size='small'
@@ -153,26 +375,28 @@ export default defineComponent({
                 disabled={releaseState === 'OFFLINE'}
                 class='btn-run'
               >
-                <NIcon>
+                <NIcon size="16">
                   <PlayCircleOutlined />
                 </NIcon>
               </NButton>
             )
           }}
         </NTooltip>
+
+        {/* 保留上线/下线按钮 */}
         <NTooltip trigger={'hover'}>
           {{
             default: () =>
               releaseState === 'ONLINE'
-                ? t('project.workflow.down_line')
-                : t('project.workflow.up_line'),
+                ? this.t('project.workflow.down_line')
+                : this.t('project.workflow.up_line'),
             trigger: () => (
               <NPopconfirm onPositiveClick={this.handleReleaseWorkflow}>
                 {{
                   default: () =>
                     releaseState === 'OFFLINE'
-                      ? t('project.workflow.confirm_to_online')
-                      : t('project.workflow.confirm_to_offline'),
+                      ? this.t('project.workflow.confirm_to_online')
+                      : this.t('project.workflow.confirm_to_offline'),
                   trigger: () => (
                     <NButton
                       size='small'
@@ -181,7 +405,7 @@ export default defineComponent({
                       circle
                       class='btn-publish'
                     >
-                      <NIcon>
+                      <NIcon size="16">
                         {releaseState === 'ONLINE' ? (
                           <DownloadOutlined />
                         ) : (
@@ -195,163 +419,27 @@ export default defineComponent({
             )
           }}
         </NTooltip>
-        <NTooltip trigger={'hover'}>
-          {{
-            default: () => t('project.workflow.timing'),
-            trigger: () => (
-              <NButton
-                size='small'
-                type='info'
-                tag='div'
-                circle
-                onClick={this.handleTimingWorkflow}
-              >
-                <NIcon>
-                  <ClockCircleOutlined />
-                </NIcon>
-              </NButton>
-            )
-          }}
-        </NTooltip>
-        <NTooltip trigger={'hover'}>
-          {{
-            default: () =>
-              scheduleReleaseState === 'ONLINE'
-                ? t('project.workflow.time_down_line')
-                : t('project.workflow.time_up_line'),
-            trigger: () => (
-              <NPopconfirm onPositiveClick={this.handleReleaseScheduler}>
-                {{
-                  default: () =>
-                    scheduleReleaseState === 'OFFLINE'
-                      ? t('project.workflow.time_to_online')
-                      : t('project.workflow.time_to_offline'),
-                  trigger: () => (
-                    <NButton
-                      size='small'
-                      type={
-                        scheduleReleaseState === 'ONLINE' ? 'warning' : 'error'
-                      }
-                      tag='div'
-                      circle
-                      class='btn-publish'
-                      disabled={!schedule || releaseState !== 'ONLINE'}
-                    >
-                      <NIcon>
-                        {scheduleReleaseState === 'ONLINE' ? (
-                          <ArrowDownOutlined />
-                        ) : (
-                          <ArrowUpOutlined />
-                        )}
-                      </NIcon>
-                    </NButton>
-                  )
-                }}
-              </NPopconfirm>
-            )
-          }}
-        </NTooltip>
-        <NTooltip trigger={'hover'}>
-          {{
-            default: () => t('project.workflow.copy_workflow'),
-            trigger: () => (
-              <NButton
-                size='small'
-                type='info'
-                tag='div'
-                circle
-                onClick={this.handleCopyWorkflow}
-              >
-                <NIcon>
-                  <CopyOutlined />
-                </NIcon>
-              </NButton>
-            )
-          }}
-        </NTooltip>
-        <NTooltip trigger={'hover'}>
-          {{
-            default: () => t('project.workflow.delete'),
-            trigger: () => (
-              <NPopconfirm
-                disabled={releaseState === 'ONLINE'}
-                onPositiveClick={this.handleDeleteWorkflow}
-              >
-                {{
-                  default: () => t('project.workflow.delete_confirm'),
-                  trigger: () => (
-                    <NButton
-                      size='small'
-                      type='error'
-                      tag='div'
-                      circle
-                      disabled={releaseState === 'ONLINE'}
-                      class='btn-delete'
-                    >
-                      <NIcon>
-                        <DeleteOutlined />
-                      </NIcon>
-                    </NButton>
-                  )
-                }}
-              </NPopconfirm>
-            )
-          }}
-        </NTooltip>
-        <NTooltip trigger={'hover'}>
-          {{
-            default: () => t('project.workflow.tree_view'),
-            trigger: () => (
-              <NButton
-                size='small'
-                type='info'
-                tag='div'
-                circle
-                onClick={this.handleGotoWorkflowTree}
-              >
-                <NIcon>
-                  <ApartmentOutlined />
-                </NIcon>
-              </NButton>
-            )
-          }}
-        </NTooltip>
-        <NTooltip trigger={'hover'}>
-          {{
-            default: () => t('project.workflow.export'),
-            trigger: () => (
-              <NButton
-                size='small'
-                type='info'
-                tag='div'
-                circle
-                onClick={this.handleExportWorkflow}
-              >
-                <NIcon>
-                  <ExportOutlined />
-                </NIcon>
-              </NButton>
-            )
-          }}
-        </NTooltip>
-        <NTooltip trigger={'hover'}>
-          {{
-            default: () => t('project.workflow.version_info'),
-            trigger: () => (
-              <NButton
-                size='small'
-                type='info'
-                tag='div'
-                circle
-                onClick={this.handleVersionWorkflow}
-              >
-                <NIcon>
-                  <InfoCircleFilled />
-                </NIcon>
-              </NButton>
-            )
-          }}
-        </NTooltip>
+
+        {/* 更多操作下拉菜单 */}
+        <NDropdown
+          trigger="hover"
+          placement="bottom-end"
+          options={this.dropdownOptions}
+          onSelect={this.handleDropdownSelect}
+          show-arrow
+        >
+          <NButton
+            size='small'
+            type='info'
+            tag='div'
+            circle
+            class='btn-more'
+          >
+            <NIcon size="16">
+              <MoreOutlined />
+            </NIcon>
+          </NButton>
+        </NDropdown>
       </NSpace>
     )
   }

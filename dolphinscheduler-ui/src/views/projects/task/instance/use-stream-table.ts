@@ -70,6 +70,86 @@ export function useTable() {
     limit: 1000
   })
 
+  // 缓存键名
+  const CACHE_KEY = `StreamTaskInstanceList_${projectCode}_searchParams`
+
+  // 缓存查询条件
+  const cacheSearchParams = () => {
+    const params = {
+      pageNo: variables.page,
+      pageSize: variables.pageSize,
+      searchVal: variables.searchVal,
+      processInstanceId: variables.processInstanceId,
+      host: variables.host,
+      stateType: variables.stateType,
+      datePickerRange: variables.datePickerRange,
+      executorName: variables.executorName,
+      processDefinitionName: variables.processDefinitionName,
+      timestamp: new Date().getTime()
+    }
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify(params))
+  }
+
+  // 恢复查询条件
+  const restoreSearchParams = () => {
+    const cachedData = sessionStorage.getItem(CACHE_KEY)
+    if (cachedData) {
+      try {
+        const cachedVars = JSON.parse(cachedData)
+        
+        // 检查缓存是否过期（比如超过1小时）
+        const cacheTime = cachedVars.timestamp || 0
+        const currentTime = new Date().getTime()
+        const oneHour = 60 * 60 * 1000
+        
+        if (currentTime - cacheTime > oneHour) {
+          sessionStorage.removeItem(CACHE_KEY)
+          return false
+        }
+        
+        // 恢复查询条件
+        variables.page = Number(cachedVars.pageNo) || 1
+        variables.pageSize = Number(cachedVars.pageSize) || 10
+        variables.searchVal = cachedVars.searchVal || null
+        variables.processInstanceId = cachedVars.processInstanceId || null
+        variables.host = cachedVars.host || null
+        variables.stateType = cachedVars.stateType || null
+        variables.datePickerRange = cachedVars.datePickerRange || null
+        variables.executorName = cachedVars.executorName || null
+        variables.processDefinitionName = cachedVars.processDefinitionName || null
+        
+        return true
+      } catch (e) {
+        return false
+      }
+    }
+    return false
+  }
+
+  // 清除缓存
+  const clearSearchCache = () => {
+    sessionStorage.removeItem(CACHE_KEY)
+  }
+
+  // 重置查询条件
+  const resetSearchParams = () => {
+    variables.page = 1
+    variables.pageSize = 10
+    variables.searchVal = null
+    variables.host = null
+    variables.stateType = null
+    variables.datePickerRange = null
+    variables.executorName = null
+    variables.processDefinitionName = null
+    
+    // 保留路由参数中的值
+    if (!route.params.processInstanceId) {
+      variables.processInstanceId = null
+    }
+    
+    clearSearchCache()
+  }
+
   const createColumns = (variables: any) => {
     variables.columns = [
       {
@@ -300,6 +380,9 @@ export function useTable() {
       taskExecuteType: 'STREAM' as 'BATCH' | 'STREAM'
     } as any
 
+    // 缓存查询条件
+    cacheSearchParams()
+
     queryTaskListPaging(data, { projectCode })
       .then((res: TaskInstancesRes) => {
         variables.tableData = [...res.totalList]
@@ -326,7 +409,10 @@ export function useTable() {
     t,
     variables,
     getTableData,
-    createColumns
+    createColumns,
+    restoreSearchParams,
+    resetSearchParams,
+    clearSearchCache
   }
 }
 
