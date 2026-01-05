@@ -79,7 +79,20 @@
                 name like concat('%', #{searchVal}, '%') OR description like concat('%', #{searchVal}, '%')
                 )
         </if>
-        order by update_time desc, id asc
+        <if test="groupName != null and groupName != ''">
+            and group_name = #{groupName}
+        </if>
+        <if test="releaseState != null and releaseState != ''">
+            and release_state = #{releaseState}
+        </if>
+        <choose>
+            <when test="orderBy != null and orderBy != '' and order != null and order != ''">
+                order by ${orderBy} ${order}
+            </when>
+            <otherwise>
+                order by update_time desc, id asc
+            </otherwise>
+        </choose>
     </select>
     <select id="filterProcessDefinition"
             parameterType="org.apache.dolphinscheduler.dao.entity.ProcessDefinition"

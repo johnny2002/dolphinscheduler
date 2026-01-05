@@ -92,7 +92,7 @@ const setting = defineComponent({
                 { label: '50000 ' + t('ui_setting.millisecond'), value: 50000 },
                 { label: '60000 ' + t('ui_setting.millisecond'), value: 60000 }
               ]}
-              onUpdateValue={(t) => this.uiSettingStore.setApiTimer(t)}
+              onUpdateValue={(t: any) => this.uiSettingStore.setApiTimer(t)}
             />
           </NSpace>
           <NSpace align='center' justify='space-between'>

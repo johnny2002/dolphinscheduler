@@ -41,3 +41,20 @@ declare namespace jquery {}
 declare module '*.png'
 declare module '*.jpg'
 declare module '*.jpeg'
+
+declare module '@vue/runtime-core' {
+    export interface GlobalComponents {
+        RouterView: typeof import('vue-router')['RouterView']
+        RouterLink: typeof import('vue-router')['RouterLink']
+    }
+}
+
+import { DefineComponent } from 'vue'
+
+declare global {
+    namespace JSX {
+        interface IntrinsicElements {
+            [elem: string]: any
+        }
+    }
+}

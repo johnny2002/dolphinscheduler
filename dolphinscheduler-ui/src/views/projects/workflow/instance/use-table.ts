@@ -426,7 +426,7 @@ export function useTable() {
           clearInterval(timer)
           timer = undefined
         }
-      }, 1000)
+      }, 1000) as any
     }
   }
 

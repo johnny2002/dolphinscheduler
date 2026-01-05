@@ -39,7 +39,11 @@ public interface ProcessDefinitionDao extends IDao<ProcessDefinition> {
                                                                   int pageSize,
                                                                   @Nullable String searchVal,
                                                                   int userId,
-                                                                  long projectCode);
+                                                                  long projectCode,
+                                                                  String orderBy,
+                                                                  String order,
+                                                                  String groupName,
+                                                                  String releaseState);
 
     Optional<ProcessDefinition> queryByCode(long code);
 

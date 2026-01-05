@@ -61,7 +61,8 @@ export default defineComponent({
       getTableData,
       batchDeleteWorkflow,
       batchExportWorkflow,
-      batchCopyWorkflow
+      batchCopyWorkflow,
+      loadAllGroupNames
     } = useTable()
 
     // 统一缓存键名
@@ -71,11 +72,15 @@ export default defineComponent({
       const json = {
         pageSize: variables.pageSize,
         pageNo: variables.page,
-        searchVal: variables.searchVal
+        searchVal: variables.searchVal,
+        orderBy: variables.sortField,
+        order: variables.sortOrder,
+        groupName: variables.selectedFilter.get('groupName'),
+        releaseState: variables.selectedFilter.get('releaseState'),
       }
-      
-      getTableData(json)
-      
+
+      getTableData(json as any)
+
       // 缓存当前请求参数
       sessionStorage.setItem(CACHE_KEY, JSON.stringify(json))
     }
@@ -137,17 +142,17 @@ export default defineComponent({
     onMounted(() => {
       // 先创建列
       createColumns(variables)
-      
+      loadAllGroupNames()
       const cachedData = sessionStorage.getItem(CACHE_KEY)
-      
+
       if (cachedData) {
         try {
           const cachedVars = JSON.parse(cachedData)
-          
+
           const cachedPage = cachedVars.pageNo || cachedVars.page || 1
           const cachedPageSize = cachedVars.pageSize || 10
           const cachedSearchVal = cachedVars.searchVal || ''
-          
+
           // 赋值给响应式变量
           variables.page = Number(cachedPage)
           variables.pageSize = Number(cachedPageSize)
@@ -159,14 +164,14 @@ export default defineComponent({
             pageNo: variables.page,
             searchVal: variables.searchVal
           })
-          
+
         } catch (e) {
           requestData()
         }
       } else {
         requestData()
       }
-      
+
     })
 
     return {
@@ -241,13 +246,34 @@ export default defineComponent({
           <NSpace vertical>
             <NDataTable
               loading={loadingRef}
-              rowKey={(row) => row.code}
+              rowKey={(row: any) => row.code}
               columns={this.columns}
               data={this.tableData}
               striped
               v-model:checked-row-keys={this.checkedRowKeys}
               row-class-name='items'
               scrollX={this.tableWidth}
+              onUpdate:sorter={(sorter: any) => {
+                  // 更新排序状态并重新请求数据
+                  this.sortField = sorter.columnKey
+                  this.sortOrder = sorter.order === 'ascend' ? 'asc' :
+                      sorter.order === 'descend' ? 'desc' : ''
+                  this.requestData()
+              }}
+              onUpdate:filters={(filters: any) => {
+                  // 处理筛选变化
+                  if (filters.groupName) {
+                      this.selectedFilter.set('groupName', filters.groupName)
+                  } else {
+                      this.selectedFilter.delete('groupName')
+                  }
+                  if (filters.releaseState) {
+                      this.selectedFilter.set('releaseState', filters.releaseState)
+                  } else {
+                      this.selectedFilter.delete('releaseState')
+                  }
+                  this.requestData()
+              }}
             />
             <NSpace justify='space-between'>
               <NSpace>

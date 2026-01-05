@@ -110,7 +110,7 @@ export default defineComponent({
                     <div
                       class={[styles.draggable, `task-item-${task.type}`]}
                       draggable='true'
-                      onDragstart={(e) => {
+                      onDragstart={(e: any) => {
                         context.emit('dragStart', e, task.type as TaskType)
                       }}
                     >
@@ -159,7 +159,7 @@ export default defineComponent({
                     <div
                       class={[styles.draggable, `task-item-${task.type}`]}
                       draggable='true'
-                      onDragstart={(e) => {
+                      onDragstart={(e: any) => {
                         context.emit('dragStart', e, task.type as TaskType)
                       }}
                     >
@@ -208,7 +208,7 @@ export default defineComponent({
                     <div
                       class={[styles.draggable, `task-item-${task.type}`]}
                       draggable='true'
-                      onDragstart={(e) => {
+                      onDragstart={(e: any) => {
                         context.emit('dragStart', e, task.type as TaskType)
                       }}
                     >
@@ -257,7 +257,7 @@ export default defineComponent({
                     <div
                       class={[styles.draggable, `task-item-${task.type}`]}
                       draggable='true'
-                      onDragstart={(e) => {
+                      onDragstart={(e: any) => {
                         context.emit('dragStart', e, task.type as TaskType)
                       }}
                     >
@@ -306,7 +306,7 @@ export default defineComponent({
                     <div
                       class={[styles.draggable, `task-item-${task.type}`]}
                       draggable='true'
-                      onDragstart={(e) => {
+                      onDragstart={(e: any) => {
                         context.emit('dragStart', e, task.type as TaskType)
                       }}
                     >
@@ -355,7 +355,7 @@ export default defineComponent({
                     <div
                       class={[styles.draggable, `task-item-${task.type}`]}
                       draggable='true'
-                      onDragstart={(e) => {
+                      onDragstart={(e: any) => {
                         context.emit('dragStart', e, task.type as TaskType)
                       }}
                     >
@@ -404,7 +404,7 @@ export default defineComponent({
                     <div
                       class={[styles.draggable, `task-item-${task.type}`]}
                       draggable='true'
-                      onDragstart={(e) => {
+                      onDragstart={(e: any) => {
                         context.emit('dragStart', e, task.type as TaskType)
                       }}
                     >
@@ -453,7 +453,7 @@ export default defineComponent({
                     <div
                       class={[styles.draggable, `task-item-${task.type}`]}
                       draggable='true'
-                      onDragstart={(e) => {
+                      onDragstart={(e: any) => {
                         context.emit('dragStart', e, task.type as TaskType)
                       }}
                     >

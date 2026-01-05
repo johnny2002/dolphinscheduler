@@ -71,7 +71,7 @@ export const useForm = () => {
       testFlag: 0,
       version: null,
       allLevelDependent: 'false',
-      executionOrder: 'DESC_ORDER'
+      executionOrder: 'ASC_ORDER'
     },
     saving: false,
     rules: {

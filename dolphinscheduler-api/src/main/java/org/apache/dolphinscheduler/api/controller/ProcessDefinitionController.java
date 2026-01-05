@@ -36,6 +36,7 @@ import static org.apache.dolphinscheduler.api.enums.Status.SWITCH_PROCESS_DEFINI
 import static org.apache.dolphinscheduler.api.enums.Status.UPDATE_PROCESS_DEFINITION_ERROR;
 import static org.apache.dolphinscheduler.api.enums.Status.VERIFY_PROCESS_DEFINITION_NAME_UNIQUE_ERROR;
 
+import cn.hutool.core.util.StrUtil;
 import org.apache.dolphinscheduler.api.audit.OperatorLog;
 import org.apache.dolphinscheduler.api.audit.enums.AuditType;
 import org.apache.dolphinscheduler.api.enums.Status;
@@ -50,6 +51,7 @@ import org.apache.dolphinscheduler.dao.entity.ProcessDefinition;
 import org.apache.dolphinscheduler.dao.entity.User;
 import org.apache.dolphinscheduler.plugin.task.api.utils.ParameterUtils;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
@@ -118,7 +120,7 @@ public class ProcessDefinitionController extends BaseController {
     public Result createProcessDefinition(@Parameter(hidden = true) @RequestAttribute(value = Constants.SESSION_USER) User loginUser,
                                           @Parameter(name = "projectCode", description = "PROJECT_CODE", required = true) @PathVariable long projectCode,
                                           @RequestParam(value = "name", required = true) String name,
-                                          @RequestParam(value = "groupName") String groupName,
+                                          @RequestParam(value = "groupName", required = false) String groupName,
                                           @RequestParam(value = "description", required = false) String description,
                                           @RequestParam(value = "globalParams", required = false, defaultValue = "[]") String globalParams,
                                           @RequestParam(value = "locations", required = false) String locations,
@@ -241,7 +243,7 @@ public class ProcessDefinitionController extends BaseController {
     public Result updateProcessDefinition(@Parameter(hidden = true) @RequestAttribute(value = Constants.SESSION_USER) User loginUser,
                                           @Parameter(name = "projectCode", description = "PROJECT_CODE", required = true) @PathVariable long projectCode,
                                           @RequestParam(value = "name", required = true) String name,
-                                          @RequestParam(value = "groupName") String groupName,
+                                          @RequestParam(value = "groupName", required = false) String groupName,
                                           @PathVariable(value = "code", required = true) long code,
                                           @RequestParam(value = "description", required = false) String description,
                                           @RequestParam(value = "globalParams", required = false, defaultValue = "[]") String globalParams,
@@ -488,16 +490,27 @@ public class ProcessDefinitionController extends BaseController {
                                                                                 @RequestParam(value = "otherParamsJson", required = false) String otherParamsJson,
                                                                                 @RequestParam(value = "userId", required = false, defaultValue = "0") Integer userId,
                                                                                 @RequestParam("pageNo") Integer pageNo,
-                                                                                @RequestParam("pageSize") Integer pageSize) {
+                                                                                @RequestParam("pageSize") Integer pageSize,
+                                                                                @RequestParam(value = "orderBy", required = false) String orderBy,
+                                                                                @RequestParam(value = "order", required = false) String order,
+                                                                                @RequestParam(value = "groupName", required = false) String groupName,
+                                                                                @RequestParam(value = "releaseState", required = false) String releaseState) {
 
         checkPageParams(pageNo, pageSize);
         searchVal = ParameterUtils.handleEscapes(searchVal);
 
         PageInfo<ProcessDefinition> pageInfo = processDefinitionService.queryProcessDefinitionListPaging(
-                loginUser, projectCode, searchVal, otherParamsJson, userId, pageNo, pageSize);
+                loginUser, projectCode, searchVal, otherParamsJson, userId, pageNo, pageSize, StrUtil.toUnderlineCase(orderBy), order, groupName, releaseState);
         return Result.success(pageInfo);
 
     }
+
+    @GetMapping("/group-names")
+    @ResponseStatus(HttpStatus.OK)
+    public Result<List<String>> allGroupNames(@PathVariable String projectCode, @RequestParam(value = "groupName", required = false) String groupName){
+        return processDefinitionService.allGroupNames(projectCode, groupName);
+    }
+
 
     /**
      * encapsulation tree view structure

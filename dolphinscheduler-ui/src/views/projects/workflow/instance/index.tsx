@@ -86,7 +86,7 @@ export default defineComponent({
       // Update timing list data
       setIntervalP = setInterval(() => {
         requestData()
-      }, 9000)
+      }, 9000) as any
     })
 
     watch(useI18n().locale, () => {
@@ -131,7 +131,7 @@ export default defineComponent({
           <NSpace vertical>
             <NDataTable
               loading={loadingRef}
-              rowKey={(row) => row.id}
+              rowKey={(row: any) => row.id}
               columns={this.columns}
               data={this.tableData}
               striped

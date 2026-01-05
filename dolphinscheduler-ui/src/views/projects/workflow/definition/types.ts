@@ -19,6 +19,10 @@ export interface IDefinitionParam {
   pageSize: number
   pageNo: number
   searchVal: string | undefined
+  orderBy?: string
+  order?: string
+  groupName?: string
+  releaseState?: string
 }
 
 export interface IDefinitionData {
