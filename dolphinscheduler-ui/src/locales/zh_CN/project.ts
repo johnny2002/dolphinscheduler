@@ -55,6 +55,7 @@ export default {
     workflow_name: '工作流名称',
     workflow_instance_name: '工作流实例名称',
     current_selection: '当前选择',
+    mark_success: '标记成功',
     online: '已上线',
     offline: '已下线',
     refresh: '刷新',

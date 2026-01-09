@@ -18,14 +18,14 @@
 import { defineComponent, PropType, toRefs } from 'vue'
 import { NSpace, NTooltip, NButton, NIcon, NPopconfirm } from 'naive-ui'
 import {
-  DeleteOutlined,
-  FormOutlined,
-  SyncOutlined,
-  CloseOutlined,
-  CloseCircleOutlined,
-  PauseCircleOutlined,
-  ControlOutlined,
-  PlayCircleOutlined
+    DeleteOutlined,
+    FormOutlined,
+    SyncOutlined,
+    CloseOutlined,
+    CloseCircleOutlined,
+    PauseCircleOutlined,
+    ControlOutlined,
+    PlayCircleOutlined, RightOutlined, CheckOutlined
 } from '@vicons/antd'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
@@ -45,6 +45,7 @@ export default defineComponent({
   emits: [
     'updateList',
     'reRun',
+    'success',
     'reStore',
     'stop',
     'suspend',
@@ -73,6 +74,10 @@ export default defineComponent({
       ctx.emit('reRun')
     }
 
+      const handleSuccess = () => {
+          ctx.emit('success')
+      }
+
     const handleReStore = () => {
       ctx.emit('reStore')
     }
@@ -92,6 +97,7 @@ export default defineComponent({
     return {
       handleEdit,
       handleReRun,
+      handleSuccess,
       handleReStore,
       handleStop,
       handleSuspend,
@@ -163,6 +169,32 @@ export default defineComponent({
               )
             }
           }}
+        </NTooltip>
+        <NTooltip trigger={'hover'}>
+            {{
+                default: () => t('project.workflow.mark_success'),
+                trigger: () => {
+                    return (
+                        <NButton
+                            tag='div'
+                            size='small'
+                            type='info'
+                            circle
+                            onClick={this.handleSuccess}
+                            class='btn-success'
+                            disabled={state !== 'FAILURE' || this.row?.disabled}
+                        >
+                            {this.row?.buttonType === 'run' ? (
+                                <span>{this.row?.count}</span>
+                            ) : (
+                                <NIcon>
+                                    <CheckOutlined />
+                                </NIcon>
+                            )}
+                        </NButton>
+                    )
+                }
+            }}
         </NTooltip>
         <NTooltip trigger={'hover'}>
           {{

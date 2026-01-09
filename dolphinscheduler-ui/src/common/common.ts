@@ -106,6 +106,10 @@ export const runningType = (t: any) => [
     code: 'REPEAT_RUNNING'
   },
   {
+    desc: `${t('project.workflow.mark_success')}`,
+    code: 'SUCCESS_PROCESS'
+  },
+  {
     desc: `${t('project.workflow.pause')}`,
     code: 'PAUSE'
   },

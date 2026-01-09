@@ -103,6 +103,13 @@ export function updateProcessInstance(
   })
 }
 
+export function markProcessInstanceSuccess(id: number, code: number): any {
+  return axios({
+    url: `/projects/${code}/process-instances/${id}/success`,
+    method: 'put'
+  })
+}
+
 export function deleteProcessInstanceById(id: number, code: number): any {
   return axios({
     url: `/projects/${code}/process-instances/${id}`,

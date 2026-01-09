@@ -19,7 +19,7 @@ import { ExecuteReq } from '@/service/modules/executors/types'
 
 interface ICountDownParam extends ExecuteReq {
   index: number
-  buttonType: 'run' | 'store' | 'suspend'
+  buttonType: 'run' | 'store' | 'suspend' | 'success'
 }
 
 interface IWorkflowInstanceSearch {

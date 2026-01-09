@@ -252,4 +252,5 @@ public interface ProcessInstanceService {
 
     void deleteProcessInstanceById(int workflowInstanceId);
 
+    Map<String, Object> successProcessInstance(User loginUser, long projectCode, Integer id);
 }

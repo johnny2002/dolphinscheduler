@@ -191,6 +191,17 @@ public class ProcessInstanceController extends BaseController {
         return returnDataList(result);
     }
 
+    @Operation(summary = "successProcessInstance", description = "SUCCESS_PROCESS_INSTANCE")
+    @PutMapping(value = "/{id}/success")
+    @ResponseStatus(HttpStatus.OK)
+    @ApiException(Status.SUCCESS_PROCESS_INSTANCE_ERROR)
+    public Result successProcessInstance(@Parameter(hidden = true) @RequestAttribute(value = Constants.SESSION_USER) User loginUser,
+                                         @Parameter(name = "projectCode", description = "PROJECT_CODE", required = true) @PathVariable long projectCode,
+                                         @PathVariable("id") Integer id) {
+        Map<String, Object> result = processInstanceService.successProcessInstance(loginUser, projectCode, id);
+        return returnDataList(result);
+    }
+
     /**
      * query process instance by id
      *

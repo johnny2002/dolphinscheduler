@@ -23,9 +23,9 @@ import ButtonLink from '@/components/button-link'
 import { RowKey } from 'naive-ui/lib/data-table/src/interface'
 import { NEllipsis, NIcon, NSpin, NTooltip } from 'naive-ui'
 import {
-  queryProcessInstanceListPaging,
-  deleteProcessInstanceById,
-  batchDeleteProcessInstanceByIds
+    queryProcessInstanceListPaging,
+    deleteProcessInstanceById,
+    batchDeleteProcessInstanceByIds, markProcessInstanceSuccess
 } from '@/service/modules/process-instances'
 import { execute } from '@/service/modules/executors'
 import TableAction from './components/table-action'
@@ -277,7 +277,7 @@ export function useTable() {
       {
         title: t('project.workflow.operation'),
         key: 'operation',
-        ...COLUMN_WIDTH_CONFIG['operation'](7),
+        ...COLUMN_WIDTH_CONFIG['operation'](8),
         render: (_row: IWorkflowInstance, index: number) =>
           h(TableAction, {
             row: _row,
@@ -288,6 +288,7 @@ export function useTable() {
                 executeType: 'REPEAT_RUNNING',
                 buttonType: 'run'
               }),
+            onSuccess: () => markInstanceSuccess(_row.id),
             onReStore: () =>
               _countDownFn({
                 index,
@@ -363,6 +364,13 @@ export function useTable() {
       }
     ).catch(() => {
       variables.loadingRef = false
+    })
+  }
+
+  const markInstanceSuccess = (id: number) => {
+    markProcessInstanceSuccess(id, variables.projectCode).then(() => {
+      window.$message.success(t('project.workflow.success'))
+      getTableData()
     })
   }
 

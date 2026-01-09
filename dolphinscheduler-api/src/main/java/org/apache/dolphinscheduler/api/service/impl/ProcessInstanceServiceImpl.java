@@ -1133,6 +1133,21 @@ public class ProcessInstanceServiceImpl extends BaseServiceImpl implements Proce
         processInstanceDao.deleteById(workflowInstanceId);
     }
 
+    @Override
+    public Map<String, Object> successProcessInstance(User loginUser, long projectCode, Integer processInstanceId) {
+        // check user access for project
+        projectService.checkProjectAndAuthThrowException(loginUser, projectCode,
+                ApiFuncIdentificationConstant.INSTANCE_UPDATE);
+        Map<String, Object> result = new HashMap<>();
+        // check process instance exists
+        ProcessInstance processInstance = processService.findProcessInstanceDetailById(processInstanceId)
+                .orElseThrow(() -> new ServiceException(PROCESS_INSTANCE_NOT_EXIST, processInstanceId));
+        processInstance.setState(WorkflowExecutionStatus.SUCCESS);
+        processInstanceDao.updateById(processInstance);
+        putMsg(result, Status.SUCCESS);
+        return result;
+    }
+
     private void deleteSubWorkflowInstanceIfNeeded(int workflowInstanceId) {
         List<Integer> subWorkflowInstanceIds = processInstanceMapDao.querySubWorkflowInstanceIds(workflowInstanceId);
         if (org.apache.commons.collections4.CollectionUtils.isEmpty(subWorkflowInstanceIds)) {
