@@ -44,6 +44,7 @@ export default {
     assign_worker_group: '分配WorkerGroup'
   },
   workflow: {
+    delete_cancel: '取消',
     on_line: '线上',
     test: '测试',
     groupName: '分组名称',

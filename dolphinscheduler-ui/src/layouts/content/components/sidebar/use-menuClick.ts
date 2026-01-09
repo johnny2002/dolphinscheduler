@@ -27,6 +27,7 @@ export function useMenuClick() {
       path: `${key}`,
       query: menuOption.payload ? (menuOption.payload as LocationQueryRaw) : {}
     })
+    sessionStorage.clear()
   }
 
   return {
