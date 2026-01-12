@@ -65,6 +65,11 @@ const props = {
     type: Boolean as PropType<boolean>,
     default: true
   },
+  // 新增：是否在关闭时销毁弹框内容
+  destroyOnClose: {
+    type: Boolean as PropType<boolean>,
+    default: true
+  },
   headerLinks: {
     type: Object as PropType<Ref<Array<LinkOption>>>,
     default: [] as LinkOption[]
@@ -109,6 +114,8 @@ const Modal = defineComponent({
         class={styles.container}
         mask-closable={false}
         auto-focus={this.autoFocus}
+        // 新增：使用 destroyOnClose 属性
+        destroyOnClose={this.destroyOnClose}
         onMaskClick={onMaskClick}
       >
         <NCard
