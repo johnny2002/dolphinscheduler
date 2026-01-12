@@ -83,6 +83,18 @@ public class DependentUtils {
             case "last3Hours":
                 result = DependentDateUtils.getLastHoursInterval(businessDate, 3);
                 break;
+            case "last4Hours":
+                result = DependentDateUtils.getLastHoursInterval(businessDate, 4);
+                break;
+            case "last6Hours":
+                result = DependentDateUtils.getLastHoursInterval(businessDate, 6);
+                break;
+            case "last8Hours":
+                result = DependentDateUtils.getLastHoursInterval(businessDate, 8);
+                break;
+            case "last12Hours":
+                result = DependentDateUtils.getLastHoursInterval(businessDate, 12);
+                break;
             case "last24Hours":
                 result = DependentDateUtils.getSpecialLastDayInterval(businessDate);
                 break;

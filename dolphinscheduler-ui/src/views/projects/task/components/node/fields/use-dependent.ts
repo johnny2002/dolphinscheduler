@@ -117,6 +117,22 @@ export function useDependent(model: { [field: string]: any }): IJsonItem[] {
         label: t('project.node.last_3_hour')
       },
       {
+        value: 'last4Hours',
+        label: t('project.node.last_4_hour')
+      },
+      {
+        value: 'last6Hours',
+        label: t('project.node.last_6_hour')
+      },
+      {
+        value: 'last8Hours',
+        label: t('project.node.last_8_hour')
+      },
+      {
+        value: 'last12Hours',
+        label: t('project.node.last_12_hour')
+      },
+      {
         value: 'last24Hours',
         label: t('project.node.last_24_hour')
       }
