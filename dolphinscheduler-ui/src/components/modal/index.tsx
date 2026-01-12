@@ -68,7 +68,7 @@ const props = {
   // 新增：是否在关闭时销毁弹框内容
   destroyOnClose: {
     type: Boolean as PropType<boolean>,
-    default: true
+    default: false
   },
   headerLinks: {
     type: Object as PropType<Ref<Array<LinkOption>>>,
