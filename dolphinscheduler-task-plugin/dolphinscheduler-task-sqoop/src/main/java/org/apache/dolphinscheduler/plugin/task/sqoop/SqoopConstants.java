@@ -24,6 +24,14 @@ public final class SqoopConstants {
     public static final String FORMAT_S_S_S = "%s%s%s";
     // sqoop general param
     public static final String SQOOP = "sqoop";
+    public static final String CODE_GEN = "codegen";
+    public static final String SQOOP_BIN_DIR = "SQOOP_BIN_DIR";
+    public static final String JAR_FILES = "JAR_FILES";
+    public static final String BIN_DIR = "--bindir";
+    public static final String PREFIX_OPER = "SQOOP_BIN_DIR=\"/tmp/sqoop/libjars_$(date +%s)_$RANDOM\"";
+    public static final String MKDIR_OPER = "mkdir -p \"$SQOOP_BIN_DIR\"";
+    public static final String LIB_JARS = "--libjars";
+    public static final String FIND_OPER = "JAR_FILES=$(find \"$SQOOP_BIN_DIR\" -name \"*.jar\" -type f | head -n 1)";
     public static final String SQOOP_MR_JOB_NAME = "mapred.job.name";
     public static final Object SQOOP_EXPORT_RECORDS_PER_STATEMENT = "sqoop.export.records.per.statement";
     public static final String SQOOP_PARALLELISM = "-m";

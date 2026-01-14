@@ -17,10 +17,8 @@
 
 package org.apache.dolphinscheduler.plugin.task.sqoop.generator;
 
-import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.D;
-import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.EQUAL_SIGN;
-import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.SPACE;
-import static org.apache.dolphinscheduler.plugin.task.sqoop.SqoopConstants.FORMAT_S_S_S;
+import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.*;
+import static org.apache.dolphinscheduler.plugin.task.sqoop.SqoopConstants.*;
 
 import org.apache.dolphinscheduler.plugin.task.api.model.Property;
 import org.apache.dolphinscheduler.plugin.task.sqoop.SqoopConstants;
@@ -47,6 +45,15 @@ public class CommonGenerator {
             commonSb.append(SqoopConstants.SQOOP)
                     .append(SPACE)
                     .append(sqoopParameters.getModelType());
+
+//            引用jars
+            commonSb.append(SPACE)
+                    .append(SqoopConstants.LIB_JARS)
+                    .append(SPACE)
+                    .append(DOUBLE_QUOTES)
+                    .append(DOUBLE_QUOTES)
+                    .append(SqoopConstants.JAR_FILES)
+                    .append(DOUBLE_QUOTES);
 
             // sqoop sqoop.export.records.per.statement
             commonSb.append(SPACE).append(D).append(SPACE)
@@ -92,6 +99,46 @@ public class CommonGenerator {
             log.error(String.format("Sqoop task general param build failed: [%s]", e.getMessage()));
         }
 
+        return commonSb.toString();
+    }
+
+    public String codeGenerate(SqoopParameters sqoopParameters) {
+
+        StringBuilder commonSb = new StringBuilder();
+
+        try {
+//            定义路径及创建路径
+            commonSb.append(SqoopConstants.PREFIX_OPER)
+                    .append(LINE_SEPARATOR)
+                    .append(SqoopConstants.MKDIR_OPER)
+                    .append(LINE_SEPARATOR);
+
+            // sqoop task model
+            commonSb.append(SqoopConstants.SQOOP)
+                    .append(SPACE)
+                    .append(SqoopConstants.CODE_GEN);
+
+            commonSb.append(SPACE)
+                    .append(SqoopConstants.BIN_DIR)
+                    .append(SPACE)
+                    .append(DOUBLE_QUOTES)
+                    .append(DOLLAR_CHAR)
+                    .append(SqoopConstants.SQOOP_BIN_DIR)
+                    .append(DOUBLE_QUOTES)
+                    .append(SPACE);
+        } catch (Exception e) {
+            log.error(String.format("Sqoop task general param build failed: [%s]", e.getMessage()));
+        }
+        return commonSb.toString();
+    }
+
+    public String generateJarPath() {
+        StringBuilder commonSb = new StringBuilder();
+        try {
+            commonSb.append(FIND_OPER).append(LINE_SEPARATOR);
+        } catch (Exception e) {
+            log.error(String.format("Sqoop task general param build failed: [%s]", e.getMessage()));
+        }
         return commonSb.toString();
     }
 }

@@ -70,6 +70,8 @@ public class TaskConstants {
      */
     public static final String SPACE = " ";
 
+    public static final String LINE_SEPARATOR = "\r\n";
+
     /**
      * SINGLE_SLASH /
      */
@@ -268,6 +270,7 @@ public class TaskConstants {
      */
     public static final String TIMESTAMP = "timestamp";
     public static final char SUBTRACT_CHAR = '-';
+    public static final char DOLLAR_CHAR = '$';
     public static final char ADD_CHAR = '+';
     public static final char MULTIPLY_CHAR = '*';
     public static final char DIVISION_CHAR = '/';
