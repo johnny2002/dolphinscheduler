@@ -263,9 +263,11 @@ public final class DingTalkSender {
         if(CollectionUtil.isNotEmpty(map)){
             map.forEach((key, value) -> {
                 JSONArray jsonArray = JSONUtil.parseArray(content);
-                JSONObject map = jsonArray.getJSONObject(0);
-                builder.append(" ");
-                builder.append(map.getStr(value));
+                if(CollectionUtil.isNotEmpty(jsonArray)) {
+                    JSONObject map = jsonArray.getJSONObject(0);
+                    builder.append(" ");
+                    builder.append(map.getStr(value));
+                }
             });
         }
         byte[] byt = StringUtils.getBytesUtf8(builder.toString());
