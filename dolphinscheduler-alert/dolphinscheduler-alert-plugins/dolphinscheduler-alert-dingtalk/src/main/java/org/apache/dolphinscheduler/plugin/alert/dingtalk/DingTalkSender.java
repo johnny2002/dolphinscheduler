@@ -17,6 +17,10 @@
 
 package org.apache.dolphinscheduler.plugin.alert.dingtalk;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import org.apache.dolphinscheduler.alert.api.AlertResult;
 import org.apache.dolphinscheduler.alert.api.HttpServiceRetryStrategy;
 import org.apache.dolphinscheduler.common.utils.JSONUtils;
@@ -44,6 +48,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -80,6 +85,8 @@ public final class DingTalkSender {
 
     private String password;
 
+    private final Map<String, String> map;
+
     DingTalkSender(Map<String, String> config) {
         url = config.get(DingTalkParamsConstants.NAME_DING_TALK_WEB_HOOK);
         keyword = config.get(DingTalkParamsConstants.NAME_DING_TALK_KEYWORD);
@@ -97,6 +104,14 @@ public final class DingTalkSender {
             user = config.get(DingTalkParamsConstants.NAME_DING_TALK_USER);
             password = config.get(DingTalkParamsConstants.NAME_DING_TALK_PASSWORD);
         }
+        this.map = config.entrySet().stream()
+                .filter(entry -> entry.getValue() != null &&
+                        entry.getValue().startsWith("${") &&
+                        entry.getValue().endsWith("}"))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().substring(2, entry.getValue().length() - 1)
+                ));
     }
 
     private static HttpPost constructHttpPost(String url, String msg) {
@@ -241,9 +256,17 @@ public final class DingTalkSender {
         StringBuilder builder = new StringBuilder(title);
         builder.append("\n");
         builder.append(content);
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(keyword)) {
-            builder.append(" ");
-            builder.append(keyword);
+//        if (org.apache.commons.lang3.StringUtils.isNotBlank(keyword)) {
+//            builder.append(" ");
+//            builder.append(keyword);
+//        }
+        if(CollectionUtil.isNotEmpty(map)){
+            map.forEach((key, value) -> {
+                JSONArray jsonArray = JSONUtil.parseArray(content);
+                JSONObject map = jsonArray.getJSONObject(0);
+                builder.append(" ");
+                builder.append(map.getStr(value));
+            });
         }
         byte[] byt = StringUtils.getBytesUtf8(builder.toString());
         String txt = StringUtils.newStringUtf8(byt);
@@ -259,11 +282,20 @@ public final class DingTalkSender {
      */
     private void generateMarkdownMsg(String title, String content, Map<String, Object> text) {
         StringBuilder builder = new StringBuilder(content);
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(keyword)) {
-            builder.append(" ");
-            builder.append(keyword);
+//        if (org.apache.commons.lang3.StringUtils.isNotBlank(keyword)) {
+//            builder.append(" ");
+//            builder.append(keyword);
+//        }
+//        builder.append("\n\n");
+        if(CollectionUtil.isNotEmpty(map)){
+            map.forEach((key, value) -> {
+                JSONArray jsonArray = JSONUtil.parseArray(content);
+                JSONObject map = jsonArray.getJSONObject(0);
+                builder.append(" ");
+                builder.append(map.getStr(value));
+                builder.append("\n\n");
+            });
         }
-        builder.append("\n\n");
         if (org.apache.commons.lang3.StringUtils.isNotBlank(atMobiles)) {
             Arrays.stream(atMobiles.split(",")).forEach(value -> {
                 builder.append("@");

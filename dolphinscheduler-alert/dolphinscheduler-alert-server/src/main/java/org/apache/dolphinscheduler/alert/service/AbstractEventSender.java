@@ -19,6 +19,10 @@ package org.apache.dolphinscheduler.alert.service;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.apache.dolphinscheduler.alert.api.AlertChannel;
 import org.apache.dolphinscheduler.alert.api.AlertConstants;
 import org.apache.dolphinscheduler.alert.api.AlertData;
@@ -30,6 +34,10 @@ import org.apache.dolphinscheduler.common.enums.AlertType;
 import org.apache.dolphinscheduler.common.utils.JSONUtils;
 import org.apache.dolphinscheduler.dao.entity.AlertPluginInstance;
 import org.apache.dolphinscheduler.dao.entity.AlertSendStatus;
+import org.apache.dolphinscheduler.dao.entity.ProcessInstance;
+import org.apache.dolphinscheduler.dao.entity.TaskInstance;
+import org.apache.dolphinscheduler.dao.mapper.ProcessInstanceMapper;
+import org.apache.dolphinscheduler.dao.mapper.TaskInstanceMapper;
 import org.apache.dolphinscheduler.extract.alert.request.AlertSendResponse;
 import org.apache.dolphinscheduler.spi.params.PluginParamsTransfer;
 
@@ -47,6 +55,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Slf4j
 public abstract class AbstractEventSender<T> implements EventSender<T> {
@@ -54,6 +63,9 @@ public abstract class AbstractEventSender<T> implements EventSender<T> {
     protected final AlertPluginManager alertPluginManager;
 
     private final long sendEventTimeout;
+
+    @Autowired
+    private TaskInstanceMapper taskInstanceMapper;
 
     protected AbstractEventSender(AlertPluginManager alertPluginManager, long sendEventTimeout) {
         this.alertPluginManager = alertPluginManager;
@@ -126,6 +138,24 @@ public abstract class AbstractEventSender<T> implements EventSender<T> {
                 .alertPluginInstanceId(instance.getId())
                 .build();
         try {
+            String content = alertData.getContent();
+            JSONArray jsonArray = JSONUtil.parseArray(content);
+            for (int i = 0; i < jsonArray.size(); i++){
+                JSONObject obj = jsonArray.getJSONObject(i);
+                List<TaskInstance> taskInstances = this.taskInstanceMapper.selectList(new QueryWrapper<TaskInstance>().lambda().eq(TaskInstance::getProcessInstanceId, obj.get("processId")));
+                for(TaskInstance taskInstance: taskInstances){
+                    String varPool = taskInstance.getVarPool();
+                    JSONArray varPools = JSONUtil.parseArray(varPool);
+                    for(int j = 0; j < varPools.size(); j++){
+                        JSONObject varPoolData = varPools.getJSONObject(j);
+                        if("OUT".equalsIgnoreCase(varPoolData.getStr("direct"))){
+                            obj.putOpt(varPoolData.getStr("prop"), varPoolData.getStr("value"));
+                        }
+                    }
+                }
+            }
+            alertData.setContent(jsonArray.toString());
+
             AlertResult alertResult;
             if (sendEventTimeout <= 0) {
                 if (alertData.getAlertType() == AlertType.CLOSE_ALERT.getCode()) {
