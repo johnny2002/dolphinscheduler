@@ -33,7 +33,7 @@ public class DataXDelegateDataSourcePreTaskCreationHandler extends AbstractDeleg
             taskParams.setDataTarget(dataSource.getId());
             taskParams.setDtType(dataSource.getType().name());
         }
-        if (taskParams.getSql() != null && taskParams.getSql().matches("^\\$\\{.+\\}")) {
+        if (taskParams.getSql() != null) {
             String sql =  taskParams.getSql();
             sql = resolveSpel(sql, env);
             taskParams.setSql(sql);
