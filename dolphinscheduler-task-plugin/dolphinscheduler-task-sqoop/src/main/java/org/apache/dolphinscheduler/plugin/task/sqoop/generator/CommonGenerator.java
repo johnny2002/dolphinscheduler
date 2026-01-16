@@ -51,7 +51,7 @@ public class CommonGenerator {
                     .append(SqoopConstants.LIB_JARS)
                     .append(SPACE)
                     .append(DOUBLE_QUOTES)
-                    .append(DOUBLE_QUOTES)
+                    .append(DOLLAR_CHAR)
                     .append(SqoopConstants.JAR_FILES)
                     .append(DOUBLE_QUOTES);
 
