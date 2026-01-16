@@ -26,6 +26,7 @@ import static org.apache.dolphinscheduler.plugin.task.sqoop.SqoopConstants.ORACL
 import static org.apache.dolphinscheduler.plugin.task.sqoop.SqoopConstants.SQLSERVER;
 
 import org.apache.dolphinscheduler.plugin.datasource.api.plugin.DataSourceProcessorProvider;
+import org.apache.dolphinscheduler.plugin.task.sqoop.SqoopConstants;
 import org.apache.dolphinscheduler.plugin.task.sqoop.SqoopJobType;
 import org.apache.dolphinscheduler.plugin.task.sqoop.SqoopTaskExecutionContext;
 import org.apache.dolphinscheduler.plugin.task.sqoop.generator.sources.HanaSourceGenerator;
@@ -88,13 +89,16 @@ public class SqoopJobGenerator {
                 throw new RuntimeException("sqoop task source type or target type is null");
             }
 
-            sqoopScripts = String.format("%s%s%s%s%s%s%s", commonGenerator.codeGenerate(sqoopParameters),
+            sqoopScripts = String.format("%s%s%s%s%s%s%s%s%s", commonGenerator.codeGenerate(sqoopParameters),
                     sourceGenerator.generate(sqoopParameters, sqoopTaskExecutionContext),
                     LINE_SEPARATOR,
                     commonGenerator.generateJarPath(),
                     commonGenerator.generate(sqoopParameters),
                     sourceGenerator.generate(sqoopParameters, sqoopTaskExecutionContext),
-                    targetGenerator.generate(sqoopParameters, sqoopTaskExecutionContext));
+                    targetGenerator.generate(sqoopParameters, sqoopTaskExecutionContext),
+                    LINE_SEPARATOR,
+                    SqoopConstants.RM_OPER
+                    );
         } else if (SqoopJobType.CUSTOM.getDescp().equals(sqoopParameters.getJobType())) {
             sqoopScripts = sqoopParameters.getCustomShell().replaceAll("\\r\\n", System.lineSeparator());
         }

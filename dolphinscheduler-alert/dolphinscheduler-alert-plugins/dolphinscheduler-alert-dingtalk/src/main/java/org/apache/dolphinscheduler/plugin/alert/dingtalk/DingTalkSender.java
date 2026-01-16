@@ -48,6 +48,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.crypto.Mac;
@@ -105,13 +107,21 @@ public final class DingTalkSender {
             password = config.get(DingTalkParamsConstants.NAME_DING_TALK_PASSWORD);
         }
         this.map = config.entrySet().stream()
-                .filter(entry -> entry.getValue() != null &&
-                        entry.getValue().startsWith("${") &&
-                        entry.getValue().endsWith("}"))
+                .filter(entry -> containsPlaceholder(entry.getValue()))
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        entry -> entry.getValue().substring(2, entry.getValue().length() - 1)
+                        Map.Entry::getValue
+//                        entry -> entry.getValue().substring(2, entry.getValue().length() - 1)
                 ));
+    }
+
+    private boolean containsPlaceholder(String str) {
+        if(org.apache.commons.lang3.StringUtils.isBlank(str)){
+            return false;
+        }
+        Pattern pattern = Pattern.compile("\\$\\{[^}]+\\}");
+        Matcher matcher = pattern.matcher(str);
+        return matcher.find();
     }
 
     private static HttpPost constructHttpPost(String url, String msg) {
@@ -188,6 +198,7 @@ public final class DingTalkSender {
     private String sendMsg(String title, String content) throws IOException {
 
         String msg = generateMsgJson(title, content);
+        msg = msg.replaceAll("\\\\n", "n");
 
         HttpPost httpPost = constructHttpPost(
                 org.apache.commons.lang3.StringUtils.isBlank(secret) ? url : generateSignedUrl(), msg);
@@ -254,8 +265,8 @@ public final class DingTalkSender {
      */
     private void generateTextMsg(String title, String content, Map<String, Object> text) {
         StringBuilder builder = new StringBuilder(title);
-        builder.append("\n");
-        builder.append(content);
+//        builder.append("\n");
+//        builder.append(content);
 //        if (org.apache.commons.lang3.StringUtils.isNotBlank(keyword)) {
 //            builder.append(" ");
 //            builder.append(keyword);
@@ -266,13 +277,24 @@ public final class DingTalkSender {
                 if(CollectionUtil.isNotEmpty(jsonArray)) {
                     JSONObject map = jsonArray.getJSONObject(0);
                     builder.append(" ");
-                    builder.append(map.getStr(value));
+                    builder.append(replace(value, map));
                 }
             });
         }
         byte[] byt = StringUtils.getBytesUtf8(builder.toString());
         String txt = StringUtils.newStringUtf8(byt);
         text.put("content", txt);
+    }
+
+    private String replace(String str, JSONObject map){
+        for(Map.Entry<String, Object> entry : map.entrySet()){
+            String key = entry.getKey();
+            String value = entry.getValue().toString();
+            if(str.contains("${"+key+"}")){
+                str = str.replace("${"+key+"}", value);
+            }
+        }
+        return str;
     }
 
     /**
@@ -294,8 +316,7 @@ public final class DingTalkSender {
                 JSONArray jsonArray = JSONUtil.parseArray(content);
                 JSONObject map = jsonArray.getJSONObject(0);
                 builder.append(" ");
-                builder.append(map.getStr(value));
-                builder.append("\n\n");
+                builder.append(replace(value, map));
             });
         }
         if (org.apache.commons.lang3.StringUtils.isNotBlank(atMobiles)) {
