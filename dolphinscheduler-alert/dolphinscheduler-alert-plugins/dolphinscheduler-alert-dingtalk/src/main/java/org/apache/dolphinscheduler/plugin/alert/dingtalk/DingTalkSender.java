@@ -27,6 +27,7 @@ import org.apache.dolphinscheduler.common.utils.JSONUtils;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
+import org.apache.dolphinscheduler.common.utils.placeholder.PlaceholderResolver;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -277,24 +278,13 @@ public final class DingTalkSender {
                 if(CollectionUtil.isNotEmpty(jsonArray)) {
                     JSONObject map = jsonArray.getJSONObject(0);
                     builder.append(" ");
-                    builder.append(replace(value, map));
+                    builder.append(PlaceholderResolver.replaceVariables(value, map));
                 }
             });
         }
         byte[] byt = StringUtils.getBytesUtf8(builder.toString());
         String txt = StringUtils.newStringUtf8(byt);
         text.put("content", txt);
-    }
-
-    private String replace(String str, JSONObject map){
-        for(Map.Entry<String, Object> entry : map.entrySet()){
-            String key = entry.getKey();
-            String value = entry.getValue().toString();
-            if(str.contains("${"+key+"}")){
-                str = str.replace("${"+key+"}", value);
-            }
-        }
-        return str;
     }
 
     /**
@@ -316,7 +306,7 @@ public final class DingTalkSender {
                 JSONArray jsonArray = JSONUtil.parseArray(content);
                 JSONObject map = jsonArray.getJSONObject(0);
                 builder.append(" ");
-                builder.append(replace(value, map));
+                builder.append(PlaceholderResolver.replaceVariables(value, map));
             });
         }
         if (org.apache.commons.lang3.StringUtils.isNotBlank(atMobiles)) {
