@@ -4,7 +4,7 @@ import org.apache.dolphinscheduler.common.utils.JSONUtils;
 import org.apache.dolphinscheduler.dao.entity.DataSource;
 import org.apache.dolphinscheduler.dao.entity.TaskInstance;
 import org.apache.dolphinscheduler.plugin.task.datax.DataxParameters;
-import org.apache.dolphinscheduler.common.utils.placeholder.PlaceholderResolver;
+import org.apache.dolphinscheduler.server.master.utils.VariableReplacer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -39,7 +39,7 @@ public class DataXDelegateDataSourcePreTaskCreationHandler extends AbstractDeleg
         if (taskParams.getSql() != null) {
             String sql =  taskParams.getSql();
             log.info("sql before: {}", sql);
-            sql = PlaceholderResolver.replaceVariables(sql, env);
+            sql = VariableReplacer.replaceVariables(sql, env);
             log.info("sql after: {}", sql);
             taskParams.setSql(sql);
         }

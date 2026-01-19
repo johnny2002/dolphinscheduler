@@ -1,4 +1,4 @@
-package org.apache.dolphinscheduler.common.utils.placeholder;
+package org.apache.dolphinscheduler.server.master.utils;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
  * 变量替换工具类 - 基础版本
  * 将字符串中的 ${variable} 替换为实际值
  */
-public class PlaceholderResolver {
+public class VariableReplacer {
 
     // 默认变量正则表达式
     private static final Pattern DEFAULT_PATTERN = Pattern.compile("\\$\\{([^}]+)\\}");
