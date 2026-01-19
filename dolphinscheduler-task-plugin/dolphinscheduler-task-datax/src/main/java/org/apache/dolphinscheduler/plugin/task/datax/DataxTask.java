@@ -150,8 +150,8 @@ public class DataxTask extends AbstractTask {
             dataXParameters.setSql(sql);
         }
         String targetTable = dataXParameters.getTargetTable();
-        if (targetTable != null && sql.contains("$")) {
-            sql = ParameterUtils.convertParameterPlaceholders(targetTable, propertyMap);
+        if (targetTable != null && targetTable.contains("$")) {
+            targetTable = ParameterUtils.convertParameterPlaceholders(targetTable, propertyMap);
             log.info("targetTable placeholders : {}", targetTable);
             dataXParameters.setTargetTable(targetTable);
         }
