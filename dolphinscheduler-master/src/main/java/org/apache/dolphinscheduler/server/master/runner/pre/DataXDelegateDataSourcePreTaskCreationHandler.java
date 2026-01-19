@@ -4,6 +4,9 @@ import org.apache.dolphinscheduler.common.utils.JSONUtils;
 import org.apache.dolphinscheduler.dao.entity.DataSource;
 import org.apache.dolphinscheduler.dao.entity.TaskInstance;
 import org.apache.dolphinscheduler.plugin.task.datax.DataxParameters;
+import org.apache.dolphinscheduler.server.master.utils.VariableReplacer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -11,7 +14,7 @@ import java.util.Objects;
 
 @Component
 public class DataXDelegateDataSourcePreTaskCreationHandler extends AbstractDelegateDataSourcePreTaskCreationHandler {
-
+    Logger log = LoggerFactory.getLogger(DataXDelegateDataSourcePreTaskCreationHandler.class);
     @Override
     public boolean isSupport(TaskInstance taskInstance) {
         return Objects.equals(taskInstance.getTaskType(), "DATAX");
@@ -35,7 +38,9 @@ public class DataXDelegateDataSourcePreTaskCreationHandler extends AbstractDeleg
         }
         if (taskParams.getSql() != null) {
             String sql =  taskParams.getSql();
-            sql = resolveSpel(sql, env);
+            log.info("sql before: {}", sql);
+            sql = VariableReplacer.replaceVariables(sql, env);
+            log.info("sql after: {}", sql);
             taskParams.setSql(sql);
         }
         return JSONUtils.toJsonString(taskParams);
