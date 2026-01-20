@@ -28,7 +28,6 @@ import org.apache.dolphinscheduler.common.utils.JSONUtils;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
-import org.apache.dolphinscheduler.plugin.task.api.utils.ParameterUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -275,19 +274,13 @@ public final class DingTalkSender {
         JSONArray jsonArray = JSONUtil.parseArray(content);
         if(CollectionUtil.isNotEmpty(jsonArray)) {
             JSONObject obj = jsonArray.getJSONObject(0);
-            Map<String, Object> tempMap = obj.toBean(Map.class);
-            Map<String, String> strMap = new HashMap<>();
-            tempMap.forEach((key, value) ->
-                    strMap.put(key, value != null ? value.toString() : "")
-            );
             if (CollectionUtil.isNotEmpty(map)) {
                 map.forEach((key, value) -> {
                     builder.append(" ");
-//                    builder.append(replace(value, obj));
-                    builder.append(ParameterUtils.convertParameterPlaceholders(value, strMap));
+                    builder.append(replace(value, obj));
                 });
             }
-            serverUrl = ParameterUtils.convertParameterPlaceholders(serverUrl, strMap);
+            serverUrl = replace(serverUrl, obj);
             builder.append("链接：").append(serverUrl);
         }
 
@@ -315,18 +308,13 @@ public final class DingTalkSender {
         JSONArray jsonArray = JSONUtil.parseArray(content);
         if(CollectionUtil.isNotEmpty(jsonArray)) {
             JSONObject obj = jsonArray.getJSONObject(0);
-            Map<String, Object> tempMap = obj.toBean(Map.class);
-            Map<String, String> strMap = new HashMap<>();
-            tempMap.forEach((key, value) ->
-                    strMap.put(key, value != null ? value.toString() : "")
-            );
             if (CollectionUtil.isNotEmpty(map)) {
                 map.forEach((key, value) -> {
                     builder.append(" ");
-                    builder.append(ParameterUtils.convertParameterPlaceholders(value, strMap));
+                    builder.append(replace(value, obj));
                 });
             }
-            serverUrl = ParameterUtils.convertParameterPlaceholders(serverUrl, strMap);
+            serverUrl = replace(serverUrl, obj);
             builder.append("链接：").append(serverUrl);
         }
         if (org.apache.commons.lang3.StringUtils.isNotBlank(atMobiles)) {
@@ -369,6 +357,17 @@ public final class DingTalkSender {
             }
         }
         return builder.toString();
+    }
+
+    private String replace(String str, JSONObject map){
+        for(Map.Entry<String, Object> entry : map.entrySet()){
+            String key = entry.getKey();
+            String value = entry.getValue().toString();
+            if(str.contains("${"+key+"}")){
+                str = str.replace("${"+key+"}", value);
+            }
+        }
+        return str;
     }
 
     /**
