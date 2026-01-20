@@ -23,6 +23,7 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import org.apache.dolphinscheduler.alert.api.AlertResult;
 import org.apache.dolphinscheduler.alert.api.HttpServiceRetryStrategy;
+import org.apache.dolphinscheduler.common.utils.ApiConfigUtils;
 import org.apache.dolphinscheduler.common.utils.JSONUtils;
 
 import org.apache.commons.codec.binary.Base64;
@@ -198,7 +199,7 @@ public final class DingTalkSender {
     private String sendMsg(String title, String content) throws IOException {
 
         String msg = generateMsgJson(title, content);
-        msg = msg.replaceAll("\\\\n", "n");
+//        msg = msg.replaceAll("\\\\n", "n");
 
         HttpPost httpPost = constructHttpPost(
                 org.apache.commons.lang3.StringUtils.isBlank(secret) ? url : generateSignedUrl(), msg);
@@ -264,37 +265,28 @@ public final class DingTalkSender {
      * @param text text
      */
     private void generateTextMsg(String title, String content, Map<String, Object> text) {
-        StringBuilder builder = new StringBuilder(title);
-//        builder.append("\n");
-//        builder.append(content);
-//        if (org.apache.commons.lang3.StringUtils.isNotBlank(keyword)) {
-//            builder.append(" ");
-//            builder.append(keyword);
-//        }
-        if(CollectionUtil.isNotEmpty(map)){
-            map.forEach((key, value) -> {
-                JSONArray jsonArray = JSONUtil.parseArray(content);
-                if(CollectionUtil.isNotEmpty(jsonArray)) {
-                    JSONObject map = jsonArray.getJSONObject(0);
-                    builder.append(" ");
-                    builder.append(replace(value, map));
-                }
-            });
+        StringBuilder builder = new StringBuilder(title).append("\n");
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(keyword)) {
+            builder.append(keyword).append("\n");
         }
+        builder.append(formatInfo(content));
+        String serverUrl = ApiConfigUtils.getServerUrl();
+        JSONArray jsonArray = JSONUtil.parseArray(content);
+        if(CollectionUtil.isNotEmpty(jsonArray)) {
+            JSONObject obj = jsonArray.getJSONObject(0);
+            if (CollectionUtil.isNotEmpty(map)) {
+                map.forEach((key, value) -> {
+                    builder.append(" ");
+                    builder.append(replace(value, obj));
+                });
+            }
+            serverUrl = replace(serverUrl, obj);
+            builder.append("链接：").append(serverUrl);
+        }
+
         byte[] byt = StringUtils.getBytesUtf8(builder.toString());
         String txt = StringUtils.newStringUtf8(byt);
         text.put("content", txt);
-    }
-
-    private String replace(String str, JSONObject map){
-        for(Map.Entry<String, Object> entry : map.entrySet()){
-            String key = entry.getKey();
-            String value = entry.getValue().toString();
-            if(str.contains("${"+key+"}")){
-                str = str.replace("${"+key+"}", value);
-            }
-        }
-        return str;
     }
 
     /**
@@ -306,18 +298,24 @@ public final class DingTalkSender {
      */
     private void generateMarkdownMsg(String title, String content, Map<String, Object> text) {
         StringBuilder builder = new StringBuilder(content);
-//        if (org.apache.commons.lang3.StringUtils.isNotBlank(keyword)) {
-//            builder.append(" ");
-//            builder.append(keyword);
-//        }
-//        builder.append("\n\n");
-        if(CollectionUtil.isNotEmpty(map)){
-            map.forEach((key, value) -> {
-                JSONArray jsonArray = JSONUtil.parseArray(content);
-                JSONObject map = jsonArray.getJSONObject(0);
-                builder.append(" ");
-                builder.append(replace(value, map));
-            });
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(keyword)) {
+//            builder.append("\n");
+            builder.append(keyword);
+        }
+        builder.append("\n");
+        builder.append(formatInfo(content));
+        String serverUrl = ApiConfigUtils.getServerUrl();
+        JSONArray jsonArray = JSONUtil.parseArray(content);
+        if(CollectionUtil.isNotEmpty(jsonArray)) {
+            JSONObject obj = jsonArray.getJSONObject(0);
+            if (CollectionUtil.isNotEmpty(map)) {
+                map.forEach((key, value) -> {
+                    builder.append(" ");
+                    builder.append(replace(value, obj));
+                });
+            }
+            serverUrl = replace(serverUrl, obj);
+            builder.append("链接：").append(serverUrl);
         }
         if (org.apache.commons.lang3.StringUtils.isNotBlank(atMobiles)) {
             Arrays.stream(atMobiles.split(",")).forEach(value -> {
@@ -338,6 +336,38 @@ public final class DingTalkSender {
         String txt = StringUtils.newStringUtf8(byt);
         text.put("title", title);
         text.put("text", txt);
+    }
+
+    private String formatInfo(String content) {
+        StringBuilder builder = new StringBuilder();
+        JSONArray jsonArray = JSONUtil.parseArray(content);
+        if(CollectionUtil.isNotEmpty(jsonArray)) {
+            JSONObject map = jsonArray.getJSONObject(0);
+            if(map == null){
+                return "";
+            }
+            if (map.containsKey("projectName")) {
+                builder.append("项目名称：").append(map.get("projectName")).append(" \n");
+            }
+            if (map.containsKey("owner")) {
+                builder.append("项目拥有者：").append(map.get("owner")).append(" \n");
+            }
+            if (map.containsKey("processName")) {
+                builder.append("流程名称：").append(map.get("processName")).append(" \n");
+            }
+        }
+        return builder.toString();
+    }
+
+    private String replace(String str, JSONObject map){
+        for(Map.Entry<String, Object> entry : map.entrySet()){
+            String key = entry.getKey();
+            String value = entry.getValue().toString();
+            if(str.contains("${"+key+"}")){
+                str = str.replace("${"+key+"}", value);
+            }
+        }
+        return str;
     }
 
     /**
