@@ -29,7 +29,7 @@ public final class Constants {
     }
 
     public static final String AUTO_CLOSE_ALERT = "alert.auto-close";
-
+    public static final String API_SERVER_URL = "api.server.url";
     /**
      * common properties path
      */

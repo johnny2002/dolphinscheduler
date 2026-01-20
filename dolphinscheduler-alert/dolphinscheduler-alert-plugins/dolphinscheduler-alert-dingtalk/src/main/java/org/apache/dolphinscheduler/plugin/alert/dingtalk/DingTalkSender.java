@@ -21,13 +21,15 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
-import org.apache.dolphinscheduler.alert.api.AlertResult;
-import org.apache.dolphinscheduler.alert.api.HttpServiceRetryStrategy;
-import org.apache.dolphinscheduler.common.utils.ApiConfigUtils;
-import org.apache.dolphinscheduler.common.utils.JSONUtils;
-
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
+import org.apache.dolphinscheduler.alert.api.AlertResult;
+import org.apache.dolphinscheduler.alert.api.HttpServiceRetryStrategy;
+import org.apache.dolphinscheduler.common.utils.JSONUtils;
+import org.apache.dolphinscheduler.common.utils.PropertyUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -42,6 +44,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -53,12 +57,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
+import static org.apache.dolphinscheduler.common.constants.Constants.API_SERVER_URL;
 
 /**
  * <p>
@@ -270,7 +269,7 @@ public final class DingTalkSender {
             builder.append(keyword).append("\n");
         }
         builder.append(formatInfo(content));
-        String serverUrl = ApiConfigUtils.getServerUrl();
+        String serverUrl = getServerUrl();
         JSONArray jsonArray = JSONUtil.parseArray(content);
         if(CollectionUtil.isNotEmpty(jsonArray)) {
             JSONObject obj = jsonArray.getJSONObject(0);
@@ -289,6 +288,10 @@ public final class DingTalkSender {
         text.put("content", txt);
     }
 
+    private static String getServerUrl() {
+        return PropertyUtils.getString(API_SERVER_URL) + "/projects/${projectCode}/workflow/instances/${processId}";
+    }
+
     /**
      * generate markdown msg
      *
@@ -304,7 +307,7 @@ public final class DingTalkSender {
         }
         builder.append("\n");
         builder.append(formatInfo(content));
-        String serverUrl = ApiConfigUtils.getServerUrl();
+        String serverUrl = getServerUrl();
         JSONArray jsonArray = JSONUtil.parseArray(content);
         if(CollectionUtil.isNotEmpty(jsonArray)) {
             JSONObject obj = jsonArray.getJSONObject(0);
