@@ -203,7 +203,11 @@ public class ProjectWorkerGroupRelationServiceImpl extends BaseServiceImpl
 
         projectWorkerGroupMapper.selectList(
                 new QueryWrapper<ProjectWorkerGroup>().lambda().eq(ProjectWorkerGroup::getProjectCode, projectCode))
-                .stream().forEach(projectWorkerGroup -> assignedWorkerGroups.add(projectWorkerGroup.getWorkerGroup()));
+                .forEach(projectWorkerGroup -> assignedWorkerGroups.add(projectWorkerGroup.getWorkerGroup()));
+
+        workerGroupMapper.selectList(new QueryWrapper<>()).forEach(workerGroup -> {
+                    assignedWorkerGroups.add(workerGroup.getName());
+                });
 
         List<ProjectWorkerGroup> projectWorkerGroups = assignedWorkerGroups.stream().map(workerGroup -> {
             ProjectWorkerGroup projectWorkerGroup = new ProjectWorkerGroup();
