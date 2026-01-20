@@ -138,9 +138,22 @@ public class DataxTask extends AbstractTask {
     public void init() {
         dataXParameters = JSONUtils.parseObject(taskExecutionContext.getTaskParams(), DataxParameters.class);
         log.info("Initialize datax task params {}", JSONUtils.toPrettyJsonString(dataXParameters));
-
         if (dataXParameters == null || !dataXParameters.checkParameters()) {
             throw new RuntimeException("datax task params is not valid");
+        }
+        Map<String, Property> paramsMap = taskExecutionContext.getPrepareParamsMap();
+        Map<String, String> propertyMap = ParameterUtils.convert(paramsMap);
+        String sql = dataXParameters.getSql();
+        if (sql != null && sql.contains("$")) {
+            sql = ParameterUtils.convertParameterPlaceholders(sql, propertyMap);
+            log.info("SQL placeholders : {}", sql);
+            dataXParameters.setSql(sql);
+        }
+        String targetTable = dataXParameters.getTargetTable();
+        if (targetTable != null && targetTable.contains("$")) {
+            targetTable = ParameterUtils.convertParameterPlaceholders(targetTable, propertyMap);
+            log.info("targetTable placeholders : {}", targetTable);
+            dataXParameters.setTargetTable(targetTable);
         }
         SensitiveDataConverter.addMaskPattern(POST_JDBC_INFO_REGEX);
         dataxTaskExecutionContext =
@@ -153,7 +166,6 @@ public class DataxTask extends AbstractTask {
         try {
             // replace placeholder,and combine local and global parameters
             Map<String, Property> paramsMap = taskExecutionContext.getPrepareParamsMap();
-
             IShellInterceptorBuilder<?, ?> shellActuatorBuilder = ShellInterceptorBuilderFactory.newBuilder()
                     .properties(ParameterUtils.convert(paramsMap))
                     .appendScript(buildCommand(buildDataxJsonFile(paramsMap), paramsMap));
