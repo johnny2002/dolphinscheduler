@@ -198,7 +198,8 @@ public final class DingTalkSender {
     private String sendMsg(String title, String content) throws IOException {
 
         String msg = generateMsgJson(title, content);
-//        msg = msg.replaceAll("\\\\n", "n");
+        msg = msg.replaceAll("\\\\\\\\n", "\\\\n")
+                .replaceAll("(?<!\\\\)\\\\n", "\n");
 
         HttpPost httpPost = constructHttpPost(
                 org.apache.commons.lang3.StringUtils.isBlank(secret) ? url : generateSignedUrl(), msg);
@@ -265,9 +266,9 @@ public final class DingTalkSender {
      */
     private void generateTextMsg(String title, String content, Map<String, Object> text) {
         StringBuilder builder = new StringBuilder(title).append("\n");
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(keyword)) {
-            builder.append(keyword).append("\n");
-        }
+//        if (org.apache.commons.lang3.StringUtils.isNotBlank(keyword)) {
+//            builder.append(keyword).append("\n");
+//        }
         builder.append(formatInfo(content));
         String serverUrl = getServerUrl();
         JSONArray jsonArray = JSONUtil.parseArray(content);
@@ -278,6 +279,7 @@ public final class DingTalkSender {
                     builder.append(" ");
                     builder.append(replace(value, obj));
                 });
+                builder.append("\n");
             }
             serverUrl = replace(serverUrl, obj);
             builder.append("链接：").append(serverUrl);
@@ -301,11 +303,10 @@ public final class DingTalkSender {
      */
     private void generateMarkdownMsg(String title, String content, Map<String, Object> text) {
         StringBuilder builder = new StringBuilder(content);
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(keyword)) {
-//            builder.append("\n");
-            builder.append(keyword);
-        }
-        builder.append("\n");
+//        if (org.apache.commons.lang3.StringUtils.isNotBlank(keyword)) {
+////            builder.append("\n");
+//            builder.append(keyword);
+//        }
         builder.append(formatInfo(content));
         String serverUrl = getServerUrl();
         JSONArray jsonArray = JSONUtil.parseArray(content);
@@ -316,6 +317,7 @@ public final class DingTalkSender {
                     builder.append(" ");
                     builder.append(replace(value, obj));
                 });
+                builder.append("\n");
             }
             serverUrl = replace(serverUrl, obj);
             builder.append("链接：").append(serverUrl);
@@ -363,6 +365,9 @@ public final class DingTalkSender {
     }
 
     private String replace(String str, JSONObject map){
+        if(!str.contains("${")){
+            return str;
+        }
         for(Map.Entry<String, Object> entry : map.entrySet()){
             String key = entry.getKey();
             String value = entry.getValue().toString();
