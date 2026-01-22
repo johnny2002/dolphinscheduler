@@ -135,19 +135,9 @@ public class SqlTask extends AbstractTask {
                     sqlTaskExecutionContext.getConnectionParams());
             List<String> subSqls = DataSourceProcessorProvider.getDataSourceProcessor(dbType)
                     .splitAndRemoveComment(sqlParameters.getSql());
-            Map<String, Property> paramsMap = taskExecutionContext.getPrepareParamsMap();
-            final Map<String, String> propertyMap = ParameterUtils.convert(paramsMap);
             // ready to execute SQL and parameter entity Map
             List<SqlBinds> mainStatementSqlBinds = subSqls
                     .stream()
-                    .map(sql -> {
-                            if (sql != null && sql.contains("$")) {
-                                sql = ParameterUtils.convertParameterPlaceholders(sql, propertyMap);
-                                log.info("SQL placeholders : {}", sql);
-                            }
-                            return sql;
-                        }
-                    )
                     .map(this::getSqlAndSqlParamsMap)
                     .collect(Collectors.toList());
 
@@ -437,13 +427,19 @@ public class SqlTask extends AbstractTask {
     private SqlBinds getSqlAndSqlParamsMap(String sql) {
         Map<Integer, Property> sqlParamsMap = new HashMap<>();
         StringBuilder sqlBuilder = new StringBuilder();
+        Map<String, Property> paramsMap = taskExecutionContext.getPrepareParamsMap();
+        final Map<String, String> propertyMap = ParameterUtils.convert(paramsMap);
+        if (sql != null && sql.contains("$")) {
+            sql = ParameterUtils.convertParameterPlaceholders(sql, propertyMap);
+            log.info("SQL placeholders : {}", sql);
+        }
         // new
         // replace variable TIME with $[YYYYmmddd...] in sql when history run job and batch complement job
         //前面统一替换了所有变量，无需再次替换时间
 //        sql = ParameterUtils.replaceScheduleTime(sql,
 //                DateUtils.timeStampToDate(taskExecutionContext.getScheduleTime()));
 
-        Map<String, Property> paramsMap = taskExecutionContext.getPrepareParamsMap();
+//        Map<String, Property> paramsMap = taskExecutionContext.getPrepareParamsMap();
 
         // spell SQL according to the final user-defined variable
         if (paramsMap == null) {
@@ -457,7 +453,8 @@ public class SqlTask extends AbstractTask {
             log.info("SQL title : {}", title);
             sqlParameters.setTitle(title);
         }
-
+        //把sql参数从:param变成${param}
+        sql = replaceColonPlaceholders(sql);
         // special characters need to be escaped, ${} needs to be escaped
         setSqlParamsMap(sql, rgex, sqlParamsMap, paramsMap, taskExecutionContext.getTaskInstanceId());
         // Replace the original value in sql ！{...} ，Does not participate in precompilation
@@ -472,7 +469,35 @@ public class SqlTask extends AbstractTask {
         printReplacedSql(sql, formatSql, rgex, sqlParamsMap);
         return new SqlBinds(sqlBuilder.toString(), sqlParamsMap);
     }
+    String replaceColonPlaceholders(String input) {
+        if (input == null || input.isEmpty()) {
+            return input;
+        }
 
+        // 正则匹配 :xxx 格式，其中 xxx 可以是字母、数字、下划线
+        Pattern pattern = Pattern.compile(":(\\w+)");
+        Matcher matcher = pattern.matcher(input);
+
+        // 使用StringBuilder提高性能
+        StringBuilder result = new StringBuilder();
+        int lastIndex = 0;
+
+        while (matcher.find()) {
+            // 添加匹配前的部分
+            result.append(input, lastIndex, matcher.start());
+
+            // 替换 :xxx 为 ${xxx}
+            String placeholder = matcher.group(1);  // 获取xxx部分
+            result.append("${").append(placeholder).append("}");
+
+            lastIndex = matcher.end();
+        }
+
+        // 添加剩余部分
+        result.append(input.substring(lastIndex));
+
+        return result.toString();
+    }
     private String replaceOriginalValue(String content, String rgex, Map<String, Property> sqlParamsMap) {
         Pattern pattern = Pattern.compile(rgex);
         while (true) {
