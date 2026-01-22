@@ -49,10 +49,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -265,29 +262,55 @@ public final class DingTalkSender {
      * @param text text
      */
     private void generateTextMsg(String title, String content, Map<String, Object> text) {
-        StringBuilder builder = new StringBuilder(title).append("\n");
-//        if (org.apache.commons.lang3.StringUtils.isNotBlank(keyword)) {
-//            builder.append(keyword).append("\n");
-//        }
-        builder.append(formatInfo(content));
-        String serverUrl = getServerUrl();
-        JSONArray jsonArray = JSONUtil.parseArray(content);
-        if(CollectionUtil.isNotEmpty(jsonArray)) {
-            JSONObject obj = jsonArray.getJSONObject(0);
-            if (CollectionUtil.isNotEmpty(map)) {
-                map.forEach((key, value) -> {
-                    builder.append(" ");
-                    builder.append(replace(value, obj));
-                });
-                builder.append("\n");
+        StringBuilder builder = new StringBuilder(title);
+        builder.append("\n");
+        if(!checkParamExist(content)){
+            builder.append(content);
+            if (org.apache.commons.lang3.StringUtils.isNotBlank(keyword)) {
+                builder.append(" ");
+                builder.append(keyword);
             }
-            serverUrl = replace(serverUrl, obj);
-            builder.append("链接：").append(serverUrl);
+        }else {
+            builder.append(formatInfo(content));
+            String serverUrl = getServerUrl();
+            JSONArray jsonArray = JSONUtil.parseArray(content);
+            if (CollectionUtil.isNotEmpty(jsonArray)) {
+                JSONObject obj = jsonArray.getJSONObject(0);
+                if (CollectionUtil.isNotEmpty(map)) {
+                    map.forEach((key, value) -> {
+                        builder.append(" ");
+                        builder.append(replace(value, obj));
+                    });
+                    builder.append("\n");
+                }
+                serverUrl = replace(serverUrl, obj);
+                builder.append("链接：").append(serverUrl);
+            }
         }
 
         byte[] byt = StringUtils.getBytesUtf8(builder.toString());
         String txt = StringUtils.newStringUtf8(byt);
         text.put("content", txt);
+    }
+
+    private boolean checkParamExist(String content) {
+        boolean flag = true;
+        List<String> keys = new ArrayList<>(map.keySet());
+        keys.add("projectCode");
+        keys.add("processId");
+        JSONArray jsonArray = JSONUtil.parseArray(content);
+        if (CollectionUtil.isNotEmpty(jsonArray)) {
+            JSONObject obj = jsonArray.getJSONObject(0);
+            if (CollectionUtil.isNotEmpty(keys)) {
+                for(String key: keys){
+                    if(!obj.containsKey(key)){
+                        flag = false;
+                        break;
+                    }
+                }
+            }
+        }
+        return flag;
     }
 
     private static String getServerUrl() {
@@ -303,24 +326,28 @@ public final class DingTalkSender {
      */
     private void generateMarkdownMsg(String title, String content, Map<String, Object> text) {
         StringBuilder builder = new StringBuilder(content);
-//        if (org.apache.commons.lang3.StringUtils.isNotBlank(keyword)) {
-////            builder.append("\n");
-//            builder.append(keyword);
-//        }
-        builder.append(formatInfo(content));
-        String serverUrl = getServerUrl();
-        JSONArray jsonArray = JSONUtil.parseArray(content);
-        if(CollectionUtil.isNotEmpty(jsonArray)) {
-            JSONObject obj = jsonArray.getJSONObject(0);
-            if (CollectionUtil.isNotEmpty(map)) {
-                map.forEach((key, value) -> {
-                    builder.append(" ");
-                    builder.append(replace(value, obj));
-                });
-                builder.append("\n");
+        if(!checkParamExist(content)){
+            if (org.apache.commons.lang3.StringUtils.isNotBlank(keyword)) {
+                builder.append(" ");
+                builder.append(keyword);
             }
-            serverUrl = replace(serverUrl, obj);
-            builder.append("链接：").append(serverUrl);
+            builder.append("\n\n");
+        }else {
+            builder.append(formatInfo(content));
+            String serverUrl = getServerUrl();
+            JSONArray jsonArray = JSONUtil.parseArray(content);
+            if (CollectionUtil.isNotEmpty(jsonArray)) {
+                JSONObject obj = jsonArray.getJSONObject(0);
+                if (CollectionUtil.isNotEmpty(map)) {
+                    map.forEach((key, value) -> {
+                        builder.append(" ");
+                        builder.append(replace(value, obj));
+                    });
+                    builder.append("\n");
+                }
+                serverUrl = replace(serverUrl, obj);
+                builder.append("链接：").append(serverUrl);
+            }
         }
         if (org.apache.commons.lang3.StringUtils.isNotBlank(atMobiles)) {
             Arrays.stream(atMobiles.split(",")).forEach(value -> {
