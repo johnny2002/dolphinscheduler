@@ -153,8 +153,10 @@ public class DependentExecute {
                     findLastProcessInterval(dependentItem.getDefinitionCode(), dependentItem.getDepTaskCode(),
                             dateInterval, testFlag);
             if (processInstance == null) {
-                return DependResult.WAITING;
-            }
+                log.info("processInstance {} is not found, treat as successes.", dateInterval.getStartTime());
+                result = DependResult.SUCCESS;
+                // return DependResult.WAITING;
+            } else
             // need to check workflow for updates, so get all task and check the task state
             if (dependentItem.getDepTaskCode() == Constants.DEPENDENT_WORKFLOW_CODE) {
                 result = dependResultByProcessInstance(processInstance);
