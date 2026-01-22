@@ -135,10 +135,19 @@ public class SqlTask extends AbstractTask {
                     sqlTaskExecutionContext.getConnectionParams());
             List<String> subSqls = DataSourceProcessorProvider.getDataSourceProcessor(dbType)
                     .splitAndRemoveComment(sqlParameters.getSql());
-
+            Map<String, Property> paramsMap = taskExecutionContext.getPrepareParamsMap();
+            final Map<String, String> propertyMap = ParameterUtils.convert(paramsMap);
             // ready to execute SQL and parameter entity Map
             List<SqlBinds> mainStatementSqlBinds = subSqls
                     .stream()
+                    .map(sql -> {
+                            if (sql != null && sql.contains("$")) {
+                                sql = ParameterUtils.convertParameterPlaceholders(sql, propertyMap);
+                                log.info("SQL placeholders : {}", sql);
+                            }
+                            return sql;
+                        }
+                    )
                     .map(this::getSqlAndSqlParamsMap)
                     .collect(Collectors.toList());
 
@@ -430,8 +439,9 @@ public class SqlTask extends AbstractTask {
         StringBuilder sqlBuilder = new StringBuilder();
         // new
         // replace variable TIME with $[YYYYmmddd...] in sql when history run job and batch complement job
-        sql = ParameterUtils.replaceScheduleTime(sql,
-                DateUtils.timeStampToDate(taskExecutionContext.getScheduleTime()));
+        //前面统一替换了所有变量，无需再次替换时间
+//        sql = ParameterUtils.replaceScheduleTime(sql,
+//                DateUtils.timeStampToDate(taskExecutionContext.getScheduleTime()));
 
         Map<String, Property> paramsMap = taskExecutionContext.getPrepareParamsMap();
 
