@@ -55,6 +55,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -149,6 +150,25 @@ public class DataxTask extends AbstractTask {
             log.info("SQL placeholders : {}", sql);
             dataXParameters.setSql(sql);
         }
+        List<String> sqls = dataXParameters.getPreStatements().stream().map( s -> {
+                    if (s != null && s.contains("$")) {
+                        s = ParameterUtils.convertParameterPlaceholders(s, propertyMap);
+                        log.info("SQL placeholders : {}", s);
+                    }
+                    return s;
+                }).collect(Collectors.toList());
+        dataXParameters.setPreStatements(sqls);
+
+        sqls = dataXParameters.getPostStatements().stream().map(
+                s -> {
+                    if (s != null && s.contains("$")) {
+                        s = ParameterUtils.convertParameterPlaceholders(s, propertyMap);
+                        log.info("SQL placeholders : {}", s);
+                    }
+                    return s;
+                }
+        ).collect(Collectors.toList());
+        dataXParameters.setPostStatements(sqls);
         String targetTable = dataXParameters.getTargetTable();
         if (targetTable != null && targetTable.contains("$")) {
             targetTable = ParameterUtils.convertParameterPlaceholders(targetTable, propertyMap);
