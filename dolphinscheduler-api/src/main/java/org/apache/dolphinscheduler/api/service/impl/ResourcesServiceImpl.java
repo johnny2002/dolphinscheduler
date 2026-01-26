@@ -1070,6 +1070,7 @@ public class ResourcesServiceImpl extends BaseServiceImpl implements ResourcesSe
         result = uploadContentToStorage(resource.getFullName(), resTenantCode, content);
 
         if (!result.getCode().equals(Status.SUCCESS.getCode())) {
+            log.error("=========>Update resource content error, resource full name:{},code:{},msg:{}.", fullName, result.getCode(), result.getMsg());
             throw new ServiceException(result.getMsg());
         } else
             log.info("Update resource content complete, resource full name:{}.", fullName);
