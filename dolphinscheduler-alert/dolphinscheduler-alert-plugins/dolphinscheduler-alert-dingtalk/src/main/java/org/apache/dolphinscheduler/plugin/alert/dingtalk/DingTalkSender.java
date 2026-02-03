@@ -271,26 +271,30 @@ public final class DingTalkSender {
                 builder.append(keyword);
             }
         }else {
-            builder.append(formatInfo(content));
-            String serverUrl = getServerUrl();
-            JSONArray jsonArray = JSONUtil.parseArray(content);
-            if (CollectionUtil.isNotEmpty(jsonArray)) {
-                JSONObject obj = jsonArray.getJSONObject(0);
-                if (CollectionUtil.isNotEmpty(map)) {
-                    map.forEach((key, value) -> {
-                        builder.append(" ");
-                        builder.append(replace(value, obj));
-                    });
-                    builder.append("\n");
-                }
-                serverUrl = replace(serverUrl, obj);
-                builder.append("链接：").append(serverUrl);
-            }
+            appendTaskInfo(content, builder);
         }
 
         byte[] byt = StringUtils.getBytesUtf8(builder.toString());
         String txt = StringUtils.newStringUtf8(byt);
         text.put("content", txt);
+    }
+
+    private void appendTaskInfo(String content, StringBuilder builder) {
+        builder.append(formatInfo(content));
+        String serverUrl = getServerUrl();
+        JSONArray jsonArray = JSONUtil.parseArray(content);
+        if (CollectionUtil.isNotEmpty(jsonArray)) {
+            JSONObject obj = jsonArray.getJSONObject(0);
+            if (CollectionUtil.isNotEmpty(map)) {
+                map.forEach((key, value) -> {
+                    builder.append(" ");
+                    builder.append(replace(value, obj));
+                });
+                builder.append("\n");
+            }
+            serverUrl = replace(serverUrl, obj);
+            builder.append("链接：").append(serverUrl);
+        }
     }
 
     private boolean checkParamExist(String content) {
@@ -333,21 +337,7 @@ public final class DingTalkSender {
             }
             builder.append("\n\n");
         }else {
-            builder.append(formatInfo(content));
-            String serverUrl = getServerUrl();
-            JSONArray jsonArray = JSONUtil.parseArray(content);
-            if (CollectionUtil.isNotEmpty(jsonArray)) {
-                JSONObject obj = jsonArray.getJSONObject(0);
-                if (CollectionUtil.isNotEmpty(map)) {
-                    map.forEach((key, value) -> {
-                        builder.append(" ");
-                        builder.append(replace(value, obj));
-                    });
-                    builder.append("\n");
-                }
-                serverUrl = replace(serverUrl, obj);
-                builder.append("链接：").append(serverUrl);
-            }
+            appendTaskInfo(content, builder);
         }
         if (org.apache.commons.lang3.StringUtils.isNotBlank(atMobiles)) {
             Arrays.stream(atMobiles.split(",")).forEach(value -> {
@@ -443,7 +433,7 @@ public final class DingTalkSender {
             byte[] signData = mac.doFinal(stringToSign.getBytes(StandardCharsets.UTF_8));
             sign = URLEncoder.encode(new String(Base64.encodeBase64(signData)), StandardCharsets.UTF_8.name());
         } catch (Exception e) {
-            log.error("generate sign error, message:{}", e);
+            log.error("generate sign error.", e);
         }
         return url + "&timestamp=" + timestamp + "&sign=" + sign;
     }
