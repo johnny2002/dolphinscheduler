@@ -1067,14 +1067,54 @@ public class ResourcesServiceImpl extends BaseServiceImpl implements ResourcesSe
             }
         }
 
+        // 备份原始文件
+        String backupFileName = fullName + ".backup";
+        if(!copyFile(fullName, backupFileName, result, false, true)){
+            return result;
+        }
+
         result = uploadContentToStorage(resource.getFullName(), resTenantCode, content);
 
         if (!result.getCode().equals(Status.SUCCESS.getCode())) {
             log.error("=========>Update resource content error, resource full name:{},code:{},msg:{}.", fullName, result.getCode(), result.getMsg());
+            // 恢复备份文件
+            copyFile(backupFileName, fullName, result, true, true);
+            // 删除备份文件
+            deleteBackupFile(backupFileName);
             throw new ServiceException(result.getMsg());
-        } else
+        } else {
             log.info("Update resource content complete, resource full name:{}.", fullName);
+            // 删除备份文件
+            deleteBackupFile(backupFileName);
+        }
+
         return result;
+    }
+
+    /**
+     * 复制文件
+     */
+    private boolean copyFile(String source, String target, Result<Object> result, boolean deleteSource, boolean overwrite) {
+        try {
+            storageOperate.copy(source, target, deleteSource, overwrite);
+            log.info("file copied: {}", target);
+            return true;
+        } catch (Exception e) {
+            log.error("Failed to copy file: {}", target, e);
+            putMsg(result, Status.HDFS_OPERATION_ERROR);
+            return false;
+        }
+    }
+
+    /**
+     * 删除备份文件
+     */
+    private void deleteBackupFile(String backupFileName) {
+        try {
+            storageOperate.delete(backupFileName, false);
+        } catch (Exception e) {
+            log.error("Failed to delete backup file: {}", backupFileName, e);
+        }
     }
 
     /**
@@ -1106,10 +1146,20 @@ public class ResourcesServiceImpl extends BaseServiceImpl implements ResourcesSe
                 log.info("Create tenant dir because path {} does not exist, tenantCode:{}.", resourcePath, tenantCode);
             }
             if (storageOperate.exists(fullName)) {
-                storageOperate.delete(fullName, false);
+                if(!storageOperate.delete(fullName, false)){
+                    log.error("Failed to delete file: {}", fullName);
+                    putMsg(result, Status.HDFS_OPERATION_ERROR);
+                    result.setMsg("删除原文件失败");
+                    return result;
+                }
             }
 
-            storageOperate.upload(tenantCode, localFilename, fullName, true, true);
+            if(!storageOperate.upload(tenantCode, localFilename, fullName, true, true)){
+                log.error("Upload failed: {} -> {}", localFilename, fullName);
+                putMsg(result, Status.HDFS_OPERATION_ERROR);
+                result.setMsg("上传文件失败");
+                return result;
+            }
         } catch (Exception e) {
             log.error("Upload content to storage error, tenantCode:{}, destFileName:{}.", tenantCode, localFilename, e);
             result.setCode(Status.HDFS_OPERATION_ERROR.getCode());
