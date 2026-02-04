@@ -17,6 +17,7 @@
 
 package org.apache.dolphinscheduler.dao.entity;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.dolphinscheduler.common.constants.Constants;
 import org.apache.dolphinscheduler.common.enums.Flag;
 import org.apache.dolphinscheduler.common.enums.Priority;
@@ -33,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import lombok.Data;
 
@@ -236,6 +238,7 @@ public class TaskDefinition {
         JsonNode localParams = JSONUtils.parseObject(taskParams).findValue("localParams");
         if (localParams != null) {
             taskParamList = JSONUtils.toList(localParams.toString(), Property.class);
+            taskParamList = taskParamList.stream().filter(param -> StringUtils.isNotBlank(param.getProp())).collect(Collectors.toList());
         }
 
         return taskParamList;
