@@ -231,6 +231,13 @@ casdoor:
   # Doplhinscheduler login url
   redirect-url: ""
 
+resource:
+  storage:
+    type: S3
+    upload.base.path: /dolphinscheduler
+  aws:
+    access.key.id: cVlFIVzTLioIiysRITmx
+    secret.access.key: 1d2f6YrGkNLtk2sjuZBRTQgeQmcqXIUOCv0ACVo9
 
 # Override by profile
 
