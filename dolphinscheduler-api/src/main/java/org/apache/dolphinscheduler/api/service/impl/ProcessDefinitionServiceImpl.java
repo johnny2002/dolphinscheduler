@@ -41,6 +41,9 @@ import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.LOCAL_PA
 import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.TASK_TYPE;
 import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.TASK_TYPE_SQL;
 
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.apache.dolphinscheduler.api.dto.DagDataSchedule;
 import org.apache.dolphinscheduler.api.dto.treeview.Instance;
@@ -417,6 +420,14 @@ public class ProcessDefinitionServiceImpl extends BaseServiceImpl implements Pro
     private List<TaskDefinitionLog> generateTaskDefinitionList(String taskDefinitionJson) {
         try {
             List<TaskDefinitionLog> taskDefinitionLogs = JSONUtils.toList(taskDefinitionJson, TaskDefinitionLog.class);
+            taskDefinitionLogs.forEach(log -> {
+                if(StringUtils.isNotBlank(log.getTaskParams())) {
+                    JSONObject taskParam = JSONUtil.parseObj(log.getTaskParams());
+                    JSONArray arr = JSONUtil.parseArray(taskParam.getJSONArray("localParams").stream().filter(obj -> StringUtils.isNotBlank(((JSONObject) obj).getStr("prop"))).collect(Collectors.toList()));
+                    taskParam.putOpt("localParams", arr);
+                    log.setTaskParams(taskParam.toString());
+                }
+            });
             if (CollectionUtils.isEmpty(taskDefinitionLogs)) {
                 log.error("Generate task definition list failed, the given taskDefinitionJson is invalided: {}",
                         taskDefinitionJson);
