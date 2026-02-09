@@ -33,11 +33,39 @@ export function useForm() {
   })
 
   const rules = {
-    password: {
-      trigger: ['input', 'blur'],
-      required: true,
-      message: t('password.password_tips')
-    },
+    password: [
+      {
+        trigger: ['input', 'blur'],
+        required: true,
+        message: t('password.password_tips')
+      },
+      {
+        trigger: ['input', 'blur'],
+        validator: (_: any, value: string) => {
+          const minLength = 8;
+          const hasUpperCase = /[A-Z]/.test(value);
+          const hasLowerCase = /[a-z]/.test(value);
+          const hasDigit = /\d/.test(value);
+          const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(value);
+          if (value.length < minLength) {
+            return Promise.reject(t('password.password_min_length_error'));
+          }
+          if (!hasUpperCase) {
+            return Promise.reject(t('password.password_uppercase_error'));
+          }
+          if (!hasLowerCase) {
+            return Promise.reject(t('password.password_lowercase_error'));
+          }
+          if (!hasDigit) {
+            return Promise.reject(t('password.password_digit_error'));
+          }
+          if (!hasSpecialChar) {
+                return Promise.reject(t('password.password_special_char_error'));
+          }
+          return Promise.resolve();
+        }
+      }
+    ],
     confirmPassword: [
       {
         trigger: ['input', 'blur'],

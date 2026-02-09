@@ -23,5 +23,11 @@ export default {
   confirm_password_tips: 'Please enter your confirm password',
   two_password_entries_are_inconsistent:
     'Two password entries are inconsistent',
-  submit: 'Submit'
+  submit: 'Submit',
+  password_min_length_error: 'Password length must be at least 8 characters',
+  password_uppercase_error: 'Password must contain at least one uppercase letter',
+  password_lowercase_error: 'Password must contain at least one lowercase letter',
+  password_digit_error: 'Password must contain at least one digit',
+  password_special_char_error: 'Password must contain at least one special character'
+
 }
