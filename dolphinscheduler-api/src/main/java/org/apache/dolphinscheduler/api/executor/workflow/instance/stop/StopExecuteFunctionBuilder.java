@@ -36,9 +36,12 @@ public class StopExecuteFunctionBuilder implements ExecuteFunctionBuilder<StopRe
     @Autowired
     private ProcessInstanceDao processInstanceDao;
 
+    @Autowired
+    private SubProcessStopService subProcessStopService;
+
     @Override
     public CompletableFuture<ExecuteFunction<StopRequest, StopResult>> createWorkflowInstanceExecuteFunction(ExecuteContext executeContext) {
-        return CompletableFuture.completedFuture(new StopExecuteFunction(processInstanceDao));
+        return CompletableFuture.completedFuture(new StopExecuteFunction(processInstanceDao, subProcessStopService));
     }
 
     @Override

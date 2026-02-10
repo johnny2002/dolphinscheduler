@@ -35,8 +35,11 @@ public class StopExecuteFunction implements ExecuteFunction<StopRequest, StopRes
 
     private final ProcessInstanceDao processInstanceDao;
 
-    public StopExecuteFunction(ProcessInstanceDao processInstanceDao) {
+    private final SubProcessStopService subProcessStopService;
+
+    public StopExecuteFunction(ProcessInstanceDao processInstanceDao, SubProcessStopService subProcessStopService) {
         this.processInstanceDao = processInstanceDao;
+        this.subProcessStopService = subProcessStopService;
     }
 
     @Override
@@ -49,6 +52,14 @@ public class StopExecuteFunction implements ExecuteFunction<StopRequest, StopRes
                     String.format("The workflow instance: %s status is %s, can not be stopped",
                             workflowInstance.getName(), workflowInstance.getState()));
         }
+
+        // 停止所有子流程
+        try {
+            subProcessStopService.stopAllSubProcesses(workflowInstance.getId());
+        } catch (Exception e) {
+            log.warn("Failed to stop some sub-processes, will continue to stop parent process", e);
+        }
+
         // update the workflow instance's status to stop
         workflowInstance.setCommandType(CommandType.STOP);
         workflowInstance.addHistoryCmd(CommandType.STOP);

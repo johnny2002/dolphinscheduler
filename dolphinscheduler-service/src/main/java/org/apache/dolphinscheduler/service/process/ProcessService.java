@@ -194,4 +194,6 @@ public interface ProcessService {
     void saveCommandTrigger(Integer commandId, Integer processInstanceId);
 
     void setGlobalParamIfCommanded(ProcessDefinition processDefinition, Map<String, String> cmdParam);
+
+    List<ProcessInstance> queryRunningSubProcessByParentId(Integer parentProcessId);
 }

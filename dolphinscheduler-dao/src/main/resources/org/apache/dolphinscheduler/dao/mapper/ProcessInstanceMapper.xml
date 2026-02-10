@@ -381,4 +381,16 @@
         on a.id = b.job_id
         where b.trigger_type = 0 and b.trigger_code = #{triggerCode}
     </select>
+
+<!--    state{0：提交成功，1:运行中，2：准备暂停，3:暂停，4：准备停止，5：已停止，6：失败，7：完成}-->
+    <select id="queryRunningSubProcessByParentId"
+            resultType="org.apache.dolphinscheduler.dao.entity.ProcessInstance">
+        SELECT
+        c.*
+        FROM t_ds_process_instance c
+        left join t_ds_relation_process_instance r on r.process_instance_id = c.id
+        WHERE r.parent_process_instance_id = #{parentId}
+        AND c.is_sub_process = 1
+        AND c.state IN (0, 1)
+    </select>
 </mapper>

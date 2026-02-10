@@ -327,4 +327,6 @@ public interface ProcessInstanceMapper extends BaseMapper<ProcessInstance> {
      * @return
      */
     List<ProcessInstance> queryByTriggerCode(@Param("triggerCode") Long triggerCode);
+
+    List<ProcessInstance> queryRunningSubProcessByParentId(@Param("parentId") Integer parentProcessId);
 }

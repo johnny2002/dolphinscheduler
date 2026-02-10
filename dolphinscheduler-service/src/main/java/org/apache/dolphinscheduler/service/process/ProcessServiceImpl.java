@@ -616,6 +616,14 @@ public class ProcessServiceImpl implements ProcessService {
         }
     }
 
+    @Override
+    public List<ProcessInstance> queryRunningSubProcessByParentId(Integer parentProcessId) {
+        if (parentProcessId == null || parentProcessId <= 0) {
+            return Collections.emptyList();
+        }
+        return processInstanceMapper.queryRunningSubProcessByParentId(parentProcessId);
+    }
+
     /**
      * Get workflow runtime tenant
      * <p>
@@ -1170,6 +1178,11 @@ public class ProcessServiceImpl implements ProcessService {
     @Override
     public void createSubWorkProcess(ProcessInstance parentProcessInstance, TaskInstance task) {
         if (!task.isSubProcess()) {
+            return;
+        }
+//        验证父流程是否在运行状态
+        ProcessInstance latestParentProcessInstance = findProcessInstanceById(parentProcessInstance.getId());
+        if(!latestParentProcessInstance.getState().equals(WorkflowExecutionStatus.RUNNING_EXECUTION)){
             return;
         }
         // check create sub work flow firstly
