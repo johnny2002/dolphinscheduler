@@ -68,7 +68,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 @Slf4j
 public class SqlTask extends AbstractTask {
 
-    public static final String SQL_VAR_PATTERN = "(?<![A-Za-z0-9_:]):(?>[A-Za-z_][A-Za-z0-9_]*)(?!:)";//":([A-Za-z_]+\\w*)";
+    public static final String SQL_VAR_PATTERN =
+            "(?<![A-Za-z0-9_:]):((?>[A-Za-z_][A-Za-z0-9_]*)(?!:))";
+    //":([A-Za-z_]+\\w*)";
     private final TaskExecutionContext taskExecutionContext;
 
     private final SqlParameters sqlParameters;

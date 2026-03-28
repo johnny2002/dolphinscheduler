@@ -142,4 +142,23 @@ class SqlTaskTest {
     @Test
     void splitSql() {
     }
+
+    @Test
+    void replaceColonPlaceholders() {
+        String r = sqlTask.replaceColonPlaceholders("SELECT emp_id::int as id\n" +
+                "FROM mdm.mdm_employee where con_dis = :con;");
+        System.out.println(r);
+        r = sqlTask.replaceColonPlaceholders("with empls as (SELECT distinct\n" +
+                "     jsonb_array_elements(json_data) AS item\n" +
+                "where data_type = 'EMPL' and status = 'pending' and update_time < ':bizTime')\n" +
+                "INSERT INTO mdm.mdm_employee(emp_id, chn_name, en_name, sex, id_type, cre_id, birthdate, con_dis, phone_mob_key, \n" +
+                "  email_addr_con, log_account, work_list, is_valid, updated_by, update_time)     \n" +
+                "  SELECT emp_id, chn_name, en_name, sex, id_type, cre_id, birthdate :: date, con_dis, phone_mob_key, \n" +
+                "  email_addr_con, log_account, work_list::jsonb, is_valid, updated_by, TO_TIMESTAMP(update_time::int8 / 1000) FROM (\n" +
+                "    SELECT *,\n" +
+                "           ROW_NUMBER() OVER (PARTITION BY emp_id ORDER BY id DESC) AS rn\n" +
+                "    FROM empls\n" +
+                ") t WHERE rn = 1;");
+        System.out.println(r);
+    }
 }
