@@ -68,6 +68,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 @Slf4j
 public class SqlTask extends AbstractTask {
 
+    public static final String SQL_VAR_PATTERN = "(?<![A-Za-z0-9_:]):(?>[A-Za-z_][A-Za-z0-9_]*)(?!:)";//":([A-Za-z_]+\\w*)";
     private final TaskExecutionContext taskExecutionContext;
 
     private final SqlParameters sqlParameters;
@@ -475,7 +476,7 @@ public class SqlTask extends AbstractTask {
         }
 
         // 正则匹配 :axx 格式，其中 axx 可以是字母、下划线开头的变量名
-        Pattern pattern = Pattern.compile(":([A-Za-z_]+\\w*)");
+        Pattern pattern = Pattern.compile(SQL_VAR_PATTERN);
         Matcher matcher = pattern.matcher(input);
 
         // 使用StringBuilder提高性能
