@@ -46,7 +46,7 @@ export function useChildNode({
     loading.value = true
     const res = await querySimpleList(projectCode)
     options.value = res
-      .filter((option: { name: string; code: number }) => option.code !== code)
+      //.filter((option: { name: string; code: number }) => option.code !== code)
       .map((option: { name: string; code: number }) => ({
         label: option.name,
         value: option.code

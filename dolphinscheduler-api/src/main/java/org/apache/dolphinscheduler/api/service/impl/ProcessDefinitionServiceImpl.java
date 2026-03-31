@@ -2666,11 +2666,13 @@ public class ProcessDefinitionServiceImpl extends BaseServiceImpl implements Pro
             return;
         }
         for (Long subWorkflowDefinitionCode : allSubWorkflowDefinitionCodes) {
-            ProcessDefinition subWorkflowDefinition = processDefinitionDao.queryByCode(subWorkflowDefinitionCode)
-                    .orElseThrow(() -> new ServiceException(PROCESS_DEFINE_NOT_EXIST, workflowDefinitionCode));
-            if (!ReleaseState.ONLINE.equals(subWorkflowDefinition.getReleaseState())) {
-                throw new ServiceException(
-                        "SubWorkflowDefinition " + subWorkflowDefinition.getName() + " is not online");
+            if (!workflowDefinitionCode.equals(subWorkflowDefinitionCode)) {
+                ProcessDefinition subWorkflowDefinition = processDefinitionDao.queryByCode(subWorkflowDefinitionCode)
+                        .orElseThrow(() -> new ServiceException(PROCESS_DEFINE_NOT_EXIST, workflowDefinitionCode));
+                if (!ReleaseState.ONLINE.equals(subWorkflowDefinition.getReleaseState())) {
+                    throw new ServiceException(
+                            "SubWorkflowDefinition " + subWorkflowDefinition.getName() + " is not online");
+                }
             }
         }
     }

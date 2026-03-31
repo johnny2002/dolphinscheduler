@@ -494,11 +494,17 @@ public class ProcessServiceImpl implements ProcessService {
      */
     @Override
     public List<Long> findAllSubWorkflowDefinitionCode(long parentCode) {
+        final List<Long> subWorkflowDefinitionCodes = new ArrayList<>();
+        findSubWorkflowDefs(parentCode, subWorkflowDefinitionCodes);
+        return subWorkflowDefinitionCodes;
+    }
+
+
+    private List<Long> findSubWorkflowDefs(long parentCode, List<Long> subWorkflowDefinitionCodes) {
         List<TaskDefinition> taskNodeList = taskDefinitionDao.getTaskDefinitionListByDefinition(parentCode);
         if (CollectionUtils.isEmpty(taskNodeList)) {
-            return Collections.emptyList();
+            return subWorkflowDefinitionCodes;
         }
-        List<Long> subWorkflowDefinitionCodes = new ArrayList<>();
 
         for (TaskDefinition taskNode : taskNodeList) {
             String parameter = taskNode.getTaskParams();
@@ -506,11 +512,13 @@ public class ProcessServiceImpl implements ProcessService {
             if (parameterJson.get(CMD_PARAM_SUB_PROCESS_DEFINE_CODE) != null) {
                 SubProcessParameters subProcessParam = JSONUtils.parseObject(parameter, SubProcessParameters.class);
                 long subWorkflowDefinitionCode = subProcessParam.getProcessDefinitionCode();
-                subWorkflowDefinitionCodes.add(subWorkflowDefinitionCode);
-                subWorkflowDefinitionCodes.addAll(findAllSubWorkflowDefinitionCode(subWorkflowDefinitionCode));
+                if (!subWorkflowDefinitionCodes.contains(subWorkflowDefinitionCode)) {
+                    subWorkflowDefinitionCodes.add(subWorkflowDefinitionCode);
+                    findSubWorkflowDefs(subWorkflowDefinitionCode, subWorkflowDefinitionCodes);
+                }
             }
         }
-        return subWorkflowDefinitionCodes;
+        return null;
     }
 
     /**
