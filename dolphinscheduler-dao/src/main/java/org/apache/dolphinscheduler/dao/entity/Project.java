@@ -96,4 +96,6 @@ public class Project {
      */
     @TableField(exist = false)
     private int instRunningCount;
+    @TableField(exist = false)
+    private int instFailedCount;
 }

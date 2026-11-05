@@ -135,6 +135,7 @@ public abstract class AbstractCommandExecutor {
         }
 
         IShellInterceptor iShellInterceptor = iShellInterceptorBuilder.build();
+        log.info("start to execute shell script");
         process = iShellInterceptor.execute();
 
         // parse process output
@@ -285,7 +286,7 @@ public abstract class AbstractCommandExecutor {
         });
 
         // getOutputLogService.shutdown();
-
+        log.info("shell script done, start to parse output.");
         ExecutorService parseProcessOutputExecutorService = ThreadUtils
                 .newSingleDaemonScheduledExecutorService("TaskInstanceLogOutput-thread-" + taskRequest.getTaskName());
         taskOutputFuture = parseProcessOutputExecutorService.submit(() -> {
@@ -314,6 +315,7 @@ public abstract class AbstractCommandExecutor {
         }
         getOutputLogService.shutdown();
         parseProcessOutputExecutorService.shutdown();
+        log.info("End of parsing output.");
     }
 
     /**
