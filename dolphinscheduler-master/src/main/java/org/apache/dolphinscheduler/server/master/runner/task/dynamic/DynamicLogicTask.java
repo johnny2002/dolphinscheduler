@@ -147,6 +147,7 @@ public class DynamicLogicTask extends BaseAsyncLogicTask<DynamicParameters> {
         ProcessDefinition subProcessDefinition =
                 processDefineMapper.queryByCode(taskParameters.getProcessDefinitionCode());
         for (Map<String, String> parameters : parameterGroup) {
+            parameters.put("shardingTotalCount", String.valueOf(parameterGroup.size()));
             String dynamicStartParams = JSONUtils.toJsonString(parameters);
             Command command = DynamicCommandUtils.createCommand(processInstance, subProcessDefinition.getCode(),
                     subProcessDefinition.getVersion(), parameters);
