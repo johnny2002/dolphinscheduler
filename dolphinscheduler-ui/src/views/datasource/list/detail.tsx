@@ -38,6 +38,7 @@ import Modal from '@/components/modal'
 import { useI18n } from 'vue-i18n'
 import { useForm, datasourceType } from './use-form'
 import { useDetail } from './use-detail'
+import type { IDataBase } from './types'
 import styles from './index.module.scss'
 
 const props = {
@@ -110,8 +111,8 @@ const DetailModal = defineComponent({
         props.show &&
           state.detailForm.type &&
           (await changeType(
-            state.detailForm.type,
-            datasourceType[state.detailForm.type]
+            state.detailForm.type as IDataBase,
+            datasourceType[state.detailForm.type as IDataBase]
           ))
         props.show && props.id && setFieldsValue(await queryById(props.id))
       }
@@ -125,8 +126,8 @@ const DetailModal = defineComponent({
           props.selectType === 'HIVE' ? 'HIVE/IMPALA' : props.selectType
         state.detailForm.type &&
           (await changeType(
-            state.detailForm.type,
-            datasourceType[state.detailForm.type]
+            state.detailForm.type as IDataBase,
+            datasourceType[state.detailForm.type as IDataBase]
           ))
       }
     )
