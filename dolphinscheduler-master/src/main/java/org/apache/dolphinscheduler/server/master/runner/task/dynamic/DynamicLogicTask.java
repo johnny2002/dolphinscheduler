@@ -103,10 +103,21 @@ public class DynamicLogicTask extends BaseAsyncLogicTask<DynamicParameters> {
     public AsyncTaskExecuteFunction getAsyncTaskExecuteFunction() throws MasterTaskExecuteException {
         List<Map<String, String>> parameterGroup = generateParameterGroup();
 
-        if (parameterGroup.size() > taskParameters.getMaxNumOfSubWorkflowInstances()) {
-            log.warn("the number of sub process instances [{}] exceeds the maximum limit [{}]", parameterGroup.size(),
-                    taskParameters.getMaxNumOfSubWorkflowInstances());
-            parameterGroup = parameterGroup.subList(0, taskParameters.getMaxNumOfSubWorkflowInstances());
+        // maxNumOfSubWorkflowInstances <= 0 表示不限制总数；只有 > 0 时才做上限截断
+        int maxNum = taskParameters.getMaxNumOfSubWorkflowInstances();
+        if (maxNum > 0 && parameterGroup.size() > maxNum) {
+            log.warn("the number of sub process instances [{}] exceeds the maximum limit [{}], will truncate to {}",
+                    parameterGroup.size(), maxNum, maxNum);
+            parameterGroup = parameterGroup.subList(0, maxNum);
+        }
+
+        // 防御：截断后（或本身就）为空时，直接失败并给出明确原因，避免走到 batchInsert 拼出非法 SQL
+        if (CollectionUtils.isEmpty(parameterGroup)) {
+            throw new MasterTaskExecuteException(
+                    "No sub workflow instance to generate. Please check: "
+                            + "1) listParameters 展开后是否非空; "
+                            + "2) filterCondition 是否把所有值都过滤掉了; "
+                            + "3) maxNumOfSubWorkflowInstances 是否被配成了一个很小的正数导致截断为空");
         }
 
         // if already exists sub process instance, do not generate again
@@ -121,7 +132,6 @@ public class DynamicLogicTask extends BaseAsyncLogicTask<DynamicParameters> {
                 commandMapper,
                 subWorkflowService, taskParameters.getDegreeOfParallelism());
     }
-
     public void resetProcessInstanceStatus(List<ProcessInstance> existsSubProcessInstanceList) {
         switch (processInstance.getCommandType()) {
             case REPEAT_RUNNING:
@@ -196,7 +206,8 @@ public class DynamicLogicTask extends BaseAsyncLogicTask<DynamicParameters> {
     public List<Map<String, String>> generateParameterGroup() {
         List<DynamicInputParameter> dynamicInputParameters = getDynamicInputParameters();
         Set<String> filterStrings =
-                Arrays.stream(StringUtils.split(taskParameters.getFilterCondition(), ",")).map(String::trim)
+                Arrays.stream(StringUtils.split(taskParameters.getFilterCondition(), ","))
+                        .map(String::trim)
                         .collect(Collectors.toSet());
 
         List<List<DynamicInputParameter>> allParameters = new ArrayList<>();
@@ -204,10 +215,15 @@ public class DynamicLogicTask extends BaseAsyncLogicTask<DynamicParameters> {
             List<DynamicInputParameter> singleParameters = new ArrayList<>();
             String value = dynamicInputParameter.getValue();
             String separator = dynamicInputParameter.getSeparator();
-            List<String> valueList =
-                    Arrays.stream(StringUtils.split(value, separator)).map(String::trim).collect(Collectors.toList());
 
-            valueList = valueList.stream().filter(v -> !filterStrings.contains(v)).collect(Collectors.toList());
+            // 1. 切分 + 区间展开（工具类内部完成）
+            List<String> expanded = ParameterRangeExpander.expandAll(value, separator);
+
+            // 2. 过滤 + 去重（保持顺序）
+            List<String> valueList = expanded.stream()
+                    .filter(v -> !filterStrings.contains(v))
+                    .distinct()
+                    .collect(Collectors.toList());
 
             for (String v : valueList) {
                 DynamicInputParameter singleParameter = new DynamicInputParameter();
@@ -218,17 +234,16 @@ public class DynamicLogicTask extends BaseAsyncLogicTask<DynamicParameters> {
             allParameters.add(singleParameters);
         }
 
-        // use Sets.cartesianProduct to get the cartesian product of all parameters
+        // 3. 笛卡尔积
         List<List<DynamicInputParameter>> cartesianProduct = Lists.cartesianProduct(allParameters);
 
-        // convert cartesian product to parameter group List<Map<name:value>>
-        List<Map<String, String>> parameterGroup = cartesianProduct.stream().map(
-                inputParameterList -> inputParameterList.stream().collect(
+        // 4. 转成 List<Map<name:value>>
+        List<Map<String, String>> parameterGroup = cartesianProduct.stream()
+                .map(inputParameterList -> inputParameterList.stream().collect(
                         Collectors.toMap(DynamicInputParameter::getName, DynamicInputParameter::getValue)))
                 .collect(Collectors.toList());
 
         log.info("parameter group size: {}", parameterGroup.size());
-        // log every parameter group
         if (CollectionUtils.isNotEmpty(parameterGroup)) {
             for (Map<String, String> map : parameterGroup) {
                 log.info("parameter group: {}", map);
@@ -236,7 +251,6 @@ public class DynamicLogicTask extends BaseAsyncLogicTask<DynamicParameters> {
         }
         return parameterGroup;
     }
-
     private List<DynamicInputParameter> getDynamicInputParameters() {
         List<DynamicInputParameter> dynamicInputParameters = taskParameters.getListParameters();
         if (CollectionUtils.isNotEmpty(dynamicInputParameters)) {
