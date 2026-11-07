@@ -176,4 +176,21 @@ class DynamicLogicTaskTest {
         Assertions.assertEquals(WorkflowExecutionStatus.WAIT_TO_RUN, failedSubProcessInstance.getState());
     }
 
+    @Test
+    void testResetProcessInstanceStatus_RecoverSuspendedProcess() {
+        processInstance.setCommandType(CommandType.RECOVER_SUSPENDED_PROCESS);
+        ProcessInstance stoppedSubProcessInstance = new ProcessInstance();
+        stoppedSubProcessInstance.setState(WorkflowExecutionStatus.STOP);
+        ProcessInstance successSubProcessInstance = new ProcessInstance();
+        successSubProcessInstance.setState(WorkflowExecutionStatus.SUCCESS);
+        List<ProcessInstance> subProcessInstances = Arrays.asList(stoppedSubProcessInstance, successSubProcessInstance);
+
+        dynamicLogicTask.resetProcessInstanceStatus(subProcessInstances);
+
+        Mockito.verify(processInstanceDao).updateById(stoppedSubProcessInstance);
+        Mockito.verify(processInstanceDao, Mockito.never()).updateById(successSubProcessInstance);
+        Assertions.assertEquals(WorkflowExecutionStatus.WAIT_TO_RUN, stoppedSubProcessInstance.getState());
+        Assertions.assertEquals(WorkflowExecutionStatus.SUCCESS, successSubProcessInstance.getState());
+    }
+
 }

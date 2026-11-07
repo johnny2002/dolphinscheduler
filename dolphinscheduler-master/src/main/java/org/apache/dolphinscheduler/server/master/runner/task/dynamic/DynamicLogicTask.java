@@ -140,6 +140,18 @@ public class DynamicLogicTask extends BaseAsyncLogicTask<DynamicParameters> {
                     processInstanceDao.updateById(processInstance);
                 });
                 break;
+            case RECOVER_SUSPENDED_PROCESS:
+                // 流程被停止/暂停后恢复运行时，需要把之前被停止/暂停的子流程实例重置为等待运行，
+                // 否则它们仍处于结束状态，会被判定为“全部结束且无成功”而直接失败
+                List<ProcessInstance> stoppedOrPausedProcessInstances = existsSubProcessInstanceList.stream()
+                        .filter(subProcessInstance -> subProcessInstance.getState().isStop()
+                                || subProcessInstance.getState().isPause())
+                        .collect(Collectors.toList());
+                stoppedOrPausedProcessInstances.forEach(processInstance -> {
+                    processInstance.setState(WorkflowExecutionStatus.WAIT_TO_RUN);
+                    processInstanceDao.updateById(processInstance);
+                });
+                break;
             case START_FAILURE_TASK_PROCESS:
             case RECOVER_TOLERANCE_FAULT_PROCESS:
                 List<ProcessInstance> failedProcessInstances =
