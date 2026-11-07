@@ -337,3 +337,8 @@ spring:
     url: jdbc:mysql://10.16.10.102:3306/dolphin32tst?useUnicode=true&characterEncoding=UTF-8
     username: dolphin32
     password: ds33123
+logging:
+  level:
+    org:
+      apache:
+        dolphinscheduler: DEBUG
