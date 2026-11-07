@@ -33,6 +33,8 @@ public class MasterTaskExecutorThreadPoolManager {
     private MasterAsyncTaskExecutorThreadPool masterAsyncTaskExecutorThreadPool;
 
     public boolean submitMasterTaskExecutor(MasterTaskExecutor masterTaskExecutor) {
+        // Register the master task executor so that the kill/pause RPC can find it and cancel the logic task.
+        MasterTaskExecutorHolder.putMasterTaskExecuteRunnable(masterTaskExecutor);
         if (masterTaskExecutor instanceof SyncMasterTaskExecutor) {
             return masterSyncTaskExecutorThreadPool
                     .submitMasterTaskExecutor((SyncMasterTaskExecutor) masterTaskExecutor);
