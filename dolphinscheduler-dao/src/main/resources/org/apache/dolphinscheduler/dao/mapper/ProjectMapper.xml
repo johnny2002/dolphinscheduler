@@ -101,7 +101,7 @@
         on instf.process_definition_code = def.code
         and instf.process_definition_version = def.version
         and instf.state = 6
-        and instf.start_time &gt; TIMESTAMPADD(DAY, -1, NOW())
+        and instf.start_time &gt; CURRENT_TIMESTAMP - INTERVAL '1' DAY
         where 1=1
         <if test="projectsIds != null and projectsIds.size() > 0">
             and p.id  in

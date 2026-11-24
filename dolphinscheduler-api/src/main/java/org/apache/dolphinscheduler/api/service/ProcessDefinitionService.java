@@ -434,5 +434,5 @@ public interface ProcessDefinitionService {
      */
     Map<String, Object> viewVariables(User loginUser, long projectCode, long code);
 
-    Result<List<String>> allGroupNames(String projectCode, String groupName);
+    Result<List<String>> allGroupNames(Long projectCode, String groupName);
 }

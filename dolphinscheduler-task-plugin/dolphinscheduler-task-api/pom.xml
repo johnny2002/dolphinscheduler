@@ -25,7 +25,9 @@
     </parent>
     <artifactId>dolphinscheduler-task-api</artifactId>
     <packaging>jar</packaging>
-
+    <properties>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.apache.dolphinscheduler</groupId>

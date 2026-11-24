@@ -2604,7 +2604,7 @@ public class ProcessDefinitionServiceImpl extends BaseServiceImpl implements Pro
     }
 
     @Override
-    public Result<List<String>> allGroupNames(String projectCode, String groupName) {
+    public Result<List<String>> allGroupNames(Long projectCode, String groupName) {
         LambdaQueryWrapper<ProcessDefinition> wrapper = new LambdaQueryWrapper<ProcessDefinition>()
                 .eq(ProcessDefinition::getProjectCode, projectCode);
         if(StringUtils.isNotBlank(groupName)){

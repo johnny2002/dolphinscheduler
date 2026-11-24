@@ -507,7 +507,7 @@ public class ProcessDefinitionController extends BaseController {
 
     @GetMapping("/group-names")
     @ResponseStatus(HttpStatus.OK)
-    public Result<List<String>> allGroupNames(@PathVariable String projectCode, @RequestParam(value = "groupName", required = false) String groupName){
+    public Result<List<String>> allGroupNames(@PathVariable Long projectCode, @RequestParam(value = "groupName", required = false) String groupName){
         return processDefinitionService.allGroupNames(projectCode, groupName);
     }
 

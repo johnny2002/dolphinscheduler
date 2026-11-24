@@ -17,7 +17,7 @@
 
 spring:
   profiles:
-    active: mysql
+    active: postgresql
   jackson:
     time-zone: UTC
     date-format: "yyyy-MM-dd HH:mm:ss"
@@ -320,7 +320,7 @@ spring:
       org.quartz.jobStore.driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://10.16.10.102:5432/postgres
+    url: jdbc:postgresql://10.16.10.234:5432,10.16.10.233:5432/dmp?targetServerType=master&sslmode=require
     username: dolphin32
     password: ds33123
 
